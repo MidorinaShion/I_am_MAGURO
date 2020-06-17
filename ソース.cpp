@@ -12,7 +12,11 @@
 int ModelHandle;						//3Dモデルのハンドルを入れる
 char AllKeyState[256] = { '\0' };		//すべてのキーの状態(直前)が入る
 
+//int MaguroScale = 0.05;				//最初のマグロの大きさ
+
 VECTOR ModelPos = { 0.0f,0.0f,0.0f };	//モデルの座標を管理
+
+VECTOR ModelScale = { 0.5,0.5,0.5 };//最初のマグロの大きさ
 
 //########## プロトタイプ宣言 ##########
 VOID MY_ALL_KEYDOWN_UPDATE(VOID);	//キーの入力状態を更新する
@@ -33,13 +37,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//３Ｄモデルの読み込み
 	//ModelHandle = MV1LoadModel("cube.mv1");
-	ModelHandle = MV1LoadModel("mqoモデル\\マグロ\\マグロ.x");
+	ModelHandle = MV1LoadModel("mqoモデル\\マグロ\\マグロ.mqo");
 
 
 	//画面に映る位置に３Ｄモデルを移動
-	ModelPos = VGet(0.0f, -30.0f, 50.0f);
+	ModelPos = VGet(500.0f, 300.0f, 0.0f);
 	//右,上,前後？
 	//DXライブラリは左下が原点
+
+	//ModelHandle = MV1SetScale(ModelHandle,VGet(0.5f,0.5f,0.5f));
 
 	//無限ループ
 	while (TRUE)
