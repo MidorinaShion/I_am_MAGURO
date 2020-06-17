@@ -45,7 +45,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//右,上,前後？
 	//DXライブラリは左下が原点
 
-	//ModelHandle = MV1SetScale(ModelHandle,VGet(0.5f,0.5f,0.5f));
+	ModelScale = VGet(0.5f, 0.5f, 0.5f);
 
 	//無限ループ
 	while (TRUE)
@@ -80,6 +80,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		//画面に映る位置に３Ｄモデルを移動
 		MV1SetPosition(ModelHandle, ModelPos);
+
+		MV1SetScale(ModelHandle, ModelScale);
 
 		// ３Ｄモデルの描画
 		MV1DrawModel(ModelHandle);
