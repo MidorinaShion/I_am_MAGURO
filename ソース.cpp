@@ -16,7 +16,15 @@ char AllKeyState[256] = { '\0' };		//すべてのキーの状態(直前)が入る
 
 VECTOR ModelPos = { 0.0f,0.0f,0.0f };	//モデルの座標を管理
 
-VECTOR ModelScale = { 0.5,0.5,0.5 };//最初のマグロの大きさ
+VECTOR ModelScale = { 0.5f,0.5f,0.5f };//最初のマグロの大きさ
+
+VECTOR AddScale_pla = { 1.05f,1.05f,1.05f };	//プランクトンを食べたときに加算
+
+VECTOR AddScale_ebi = { 1.1f,1.1f,1.1f };	//エビを食べたときに加算
+
+VECTOR AddScale_ika = { 1.3f,1.3f,1.3f };	//イカを食べたときに加算
+
+MV1_COLL_RESULT_POLY HitPoly;		//当たり判定？
 
 //########## プロトタイプ宣言 ##########
 VOID MY_ALL_KEYDOWN_UPDATE(VOID);	//キーの入力状態を更新する
@@ -45,7 +53,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//右,上,前後？
 	//DXライブラリは左下が原点
 
-	ModelScale = VGet(0.5f, 0.5f, 0.5f);
+	ModelScale = VGet(0.3f, 0.3f, 0.3f);
+
+
 
 	//無限ループ
 	while (TRUE)
@@ -78,10 +88,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		DrawFormatString(0, 20, GetColor(255, 255, 255), "y : %lf", ModelPos.y);
 		DrawFormatString(0, 40, GetColor(255, 255, 255), "z : %lf", ModelPos.z);
 
+		//マグロを常に奥へ
+		ModelPos.z += 10.0f;
+
 		//画面に映る位置に３Ｄモデルを移動
 		MV1SetPosition(ModelHandle, ModelPos);
 
 		MV1SetScale(ModelHandle, ModelScale);
+
+		MV1SetRotationXYZ(ModelHandle, VGet(0.0f, 180.0f * DX_PI_F / 180.0f, 0.0f));
+
+		//モデルの当たり判定
+		MV1SetupCollInfo(ModelHandle, 0, 1, 1, 1);
 
 		// ３Ｄモデルの描画
 		MV1DrawModel(ModelHandle);
