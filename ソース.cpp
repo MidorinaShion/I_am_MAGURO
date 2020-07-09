@@ -118,25 +118,86 @@ typedef struct STRUCT_CAMERA
 }CAMERA;
 
 //########## グローバル変数 ##########
-int ModelHandle;						//3Dモデルのハンドルを入れる
-char AllKeyState[256] = { '\0' };		//すべてのキーの状態(直前)が入る
+
+//FPS関連
+int StartTimeFps;				//測定開始時刻
+int CountFps;					//カウンタ
+float CalcFps;					//計算結果
+int SampleNumFps = GAME_FPS;	//平均を取るサンプル数
+
+//キーボードの入力を取得
+char AllKeyState[256] = { '\0' };		//すべてのキーの状態が入る
+char OldAllKeyState[256] = { '\0' };	//すべてのキーの状態(直前)が入る
+
+//ゲームシーンを管理
+int GameScene;
+
+//カメラ
+CAMERA camera;
+
+//モデル
+MODEL Maguro;	//マグロ
+MODEL Ebi;		//エビ
+MODEL Ika;		//イカ
+MODEL Pura;		//プランクトン
+
+//画像
+IMAGE ImageTitleBK;		//仮置き
+IMAGE ImageTitleLOGO;
+IMAGE ImageTitleStart;
+IMAGE ImageTitleEnd;
+IMAGE ImageTitleHowTo;
+
+//マグロの位置をマップと対応付ける
+int MaguroToMapX;
+int MaguroToMapZ;
+
+//マグロの当たり判定(カプセル)
+VECTOR MaguroCollVecStart;						//カプセルの始点
+VECTOR MaguroCollVecEnd;						//カプセルの終点
+float MaguroCollRadius = MAGURO_CAP_RADIUS;		//カプセルの半径
+
+//マグロが動けたときの座標を記憶
+VECTOR MaguroMovePos;
 
 //int MaguroScale = 0.05;				//最初のマグロの大きさ
-
-VECTOR ModelPos = { 0.0f,0.0f,0.0f };	//モデルの座標を管理
-
-VECTOR ModelScale = { 0.5f,0.5f,0.5f };//最初のマグロの大きさ
-
-VECTOR AddScale_pla = { 1.05f,1.05f,1.05f };	//プランクトンを食べたときに加算
-
-VECTOR AddScale_ebi = { 1.1f,1.1f,1.1f };	//エビを食べたときに加算
-
-VECTOR AddScale_ika = { 1.3f,1.3f,1.3f };	//イカを食べたときに加算
-
-MV1_COLL_RESULT_POLY HitPoly;		//当たり判定？
+//
+//VECTOR ModelPos = { 0.0f,0.0f,0.0f };	//モデルの座標を管理
+//
+//VECTOR ModelScale = { 0.5f,0.5f,0.5f };//最初のマグロの大きさ
+//
+//VECTOR AddScale_pla = { 1.05f,1.05f,1.05f };	//プランクトンを食べたときに加算
+//
+//VECTOR AddScale_ebi = { 1.1f,1.1f,1.1f };	//エビを食べたときに加算
+//
+//VECTOR AddScale_ika = { 1.3f,1.3f,1.3f };	//イカを食べたときに加算
+//
+//MV1_COLL_RESULT_POLY HitPoly;		//当たり判定？
 
 //########## プロトタイプ宣言 ##########
+
+VOID MY_FPS_UPDATE(VOID);		//FPS値を計測、更新する
+VOID MY_FPS_DRAW(VOID);			//FPS値を描画する
+VOID MY_FPS_WAIT(VOID);			//FPS値を計測し、待つ
+
 VOID MY_ALL_KEYDOWN_UPDATE(VOID);	//キーの入力状態を更新する
+BOOL MY_KEY_DOWN(int);				//キーを押しているか、キーコードで判断する
+BOOL MY_KEY_UP(int);				//キーを押し上げたか、キーコードで判断する
+BOOL MY_KEYDOWN_KEEP(int, int);		//キーを押し続けているか、キーコードで判断する
+
+BOOL MY_GAME_INIT(VOID);	//ゲーム初期化画面
+
+VOID MY_START(VOID);
+VOID MY_START_PROC(VOID);
+VOID MY_START_DRAW(VOID);
+
+VOID MY_PLAY(VOID);
+VOID MY_PLAY_PROC(VOID);
+VOID MY_PLAY_DRAW(VOID);
+
+VOID MY_END(VOID);
+VOID MY_END_PROC(VOID);
+VOID MY_END_DRAW(VOID);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
