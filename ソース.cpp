@@ -187,17 +187,25 @@ BOOL MY_KEYDOWN_KEEP(int, int);		//キーを押し続けているか、キーコードで判断する
 
 BOOL MY_GAME_INIT(VOID);	//ゲーム初期化画面
 
-VOID MY_START(VOID);
-VOID MY_START_PROC(VOID);
-VOID MY_START_DRAW(VOID);
+VOID MY_START(VOID);		//スタート画面
+VOID MY_START_PROC(VOID);	//スタート画面の処理
+VOID MY_START_DRAW(VOID);	//スタート画面の描画
 
-VOID MY_PLAY(VOID);
-VOID MY_PLAY_PROC(VOID);
-VOID MY_PLAY_DRAW(VOID);
+VOID MY_PLAY(VOID);			//プレイ画面
+VOID MY_PLAY_PROC(VOID);	//プレイ画面の処理
+VOID MY_PLAY_DRAW(VOID);	//プレイ画面の描画
 
-VOID MY_END(VOID);
-VOID MY_END_PROC(VOID);
-VOID MY_END_DRAW(VOID);
+VOID MY_END(VOID);			//エンド画面
+VOID MY_END_PROC(VOID);		//エンド画面の処理
+VOID MY_END_DRAW(VOID);		//エンド画面の描画
+
+BOOL MY_LOAD_IMAGE(VOID);		//画像をまとめて読み込む関数
+VOID MY_DELETE_IMAGE(VOID);		//画像をまとめて削除する関数
+
+BOOL MY_LOAD_MODEL(VOID);		//3Dモデルをまとめて読み込む関数
+VOID MY_DELETE_MODEL(VOID);		//3Dモデルをまとめて削除する関数
+
+VOID MY_PROC_MAGURO(VOID);		//マグロの処理
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -210,22 +218,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//ＤＸライブラリ初期化処理
 	if (DxLib_Init() == -1) { return -1; }
 
-	//Draw系関数は裏画面に描画
-	SetDrawScreen(DX_SCREEN_BACK);
+	SetMouseDispFlag(TRUE);					//マウスカーソルを表示	
+	SetDrawScreen(DX_SCREEN_BACK);			//Draw系関数は裏画面に描画
 
-	//３Ｄモデルの読み込み
-	//ModelHandle = MV1LoadModel("cube.mv1");
-	ModelHandle = MV1LoadModel(".\\mqoモデル\\マグロ\\マグロ.mqo");
+	//画像を読み込む
+	if (MY_LOAD_IMAGE() == FALSE) { return -1; }
 
+	//3Dモデルを読み込む
+	if (MY_LOAD_MODEL() == FALSE) { return -1; }
 
-	//画面に映る位置に３Ｄモデルを移動
-	ModelPos = VGet(500.0f, 300.0f, 0.0f);
-	//右,上,前後？
-	//DXライブラリは左下が原点
+	//ゲームの初期化
+	if (MY_GAME_INIT() == FALSE) { return -1; }
 
-	ModelScale = VGet(0.3f, 0.3f, 0.3f);
-
-
+	//標準ライトの方向を設定する
+	SetLightDirection(VGet(0.0f, 1.0f, 0.0f));
 
 	//無限ループ
 	while (TRUE)
@@ -236,27 +242,38 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		//画面を消去できなかったとき、強制終了
 		if (ClearDrawScreen() != 0) { break; }
 
+		//おわるを選ぶとゲーム終了ダイアログを表示(仮置きでESCキー)
+		if (AllKeyState[KEY_INPUT_ESCAPE] != 0)
+		{
+			int Ret = MessageBox(GetMainWindowHandle(), "終了しますか？", "確認", MB_YESNO);
+		
+			if (Ret == IDYES) { break; }
+		
+		}
+
 		//押しているキー状態を取得
 		MY_ALL_KEYDOWN_UPDATE();
 
-		//ESCキーを押すと、無限ループを終了する
-		if (AllKeyState[KEY_INPUT_ESCAPE] != 0) { break; }
+		//FPSの処理(更新)
+		MY_FPS_UPDATE();
 
-		//Wキーを押すと、モデルが上に移動する
-		if (AllKeyState[KEY_INPUT_W] != 0) { ModelPos.y += 10.0f; }
+		//シーンごとに処理を行う
+		switch (GameScene)
+		{
 
-		//Sキーを押すと、モデルが下に移動する
-		if (AllKeyState[KEY_INPUT_S] != 0) { ModelPos.y -= 10.0f; }
+		case GAME_SCENE_START:
+			MY_START();	//スタート画面
+			break;
 
-		//Dキーを押すと、モデルが右に移動する
-		if (AllKeyState[KEY_INPUT_D] != 0) { ModelPos.x += 10.0f; }
+		case GAME_SCENE_PLAY:
+			MY_PLAY();	//プレイ画面
+			break;
 
-		//Aキーを押すと、モデルが左に移動する
-		if (AllKeyState[KEY_INPUT_A] != 0) { ModelPos.x -= 10.0f; }
+		case GAME_SCENE_END:
+			MY_END();	//エンド画面
+			break;
 
-		DrawFormatString(0, 0, GetColor(255, 255, 255), "x : %lf", ModelPos.x);
-		DrawFormatString(0, 20, GetColor(255, 255, 255), "y : %lf", ModelPos.y);
-		DrawFormatString(0, 40, GetColor(255, 255, 255), "z : %lf", ModelPos.z);
+		}
 
 		//マグロを常に奥へ
 		ModelPos.z += 10.0f;
