@@ -275,29 +275,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		}
 
+		MY_FPS_DRAW();	//FPSの処理(描画)
+
+		ScreenFlip();	//モニタのリフレッシュレートの速さで画面を再描画
+
+		MY_FPS_WAIT();	//FPSの処理(待つ)
+
 		//マグロを常に奥へ
-		ModelPos.z += 10.0f;
-
-		//画面に映る位置に３Ｄモデルを移動
-		MV1SetPosition(ModelHandle, ModelPos);
-
-		MV1SetScale(ModelHandle, ModelScale);
-
-		MV1SetRotationXYZ(ModelHandle, VGet(0.0f, 180.0f * DX_PI_F / 180.0f, 0.0f));
-
-		//モデルの当たり判定
-		MV1SetupCollInfo(ModelHandle, 0, 1, 1, 1);
-
-		// ３Ｄモデルの描画
-		MV1DrawModel(ModelHandle);
-
-		//モニタのリフレッシュレートの速さで裏画面を再描画
-		ScreenFlip();
+		//ModelPos.z += 10.0f;
 
 	}
-
-	// モデルハンドルの削除
-	MV1DeleteModel(ModelHandle);
 
 	// ＤＸライブラリの後始末
 	DxLib_End();
@@ -306,11 +293,70 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	return 0;
 }
 
+//FPSを計測、更新する関数 ################################3
+VOID MY_FPS_UPDATE(VOID)
+{
+
+	if (CountFps == 0) //1フレーム目なら時刻を記憶
+	{
+		StartTimeFps = GetNowCount();
+	}
+
+	if (CountFps == SampleNumFps)
+	{
+		int now = GetNowCount();
+		//現在の時間から、0フレーム目の時間を引き、FPSの数値で割る＝1FPS辺りの平均時間が計算される
+		CalcFps = 1000.f / ((now - StartTimeFps) / (float)SampleNumFps);
+		CountFps = 0;
+		StartTimeFps = now;
+	}
+
+	CountFps++;
+	return;
+
+}
+
+//FPS値を描画する関数 ##############################
+VOID MY_FPS_DRAW(VOID)
+{
+	//文字列を描画
+	DrawFormatString(
+		0,
+		GAME_HEIGHT - 20,
+		GetColor(255, 255, 255),
+		"FPS : %.1f",
+		CalcFps
+	);
+	return;
+}
+
+//FPS値を計測し、待つ関数 ##########################
+VOID MY_FPS_WAIT(VOID)
+{
+	int resultTime = GetNowCount() - StartTimeFps;			//かかった時間
+	int waitTime = CountFps * 1000 / GAME_FPS - resultTime;	//待つべき時間
+
+	if (waitTime > 0)
+	{
+		WaitTimer(waitTime);	//待つ
+	}
+
+	return;
+
+}
+
 //########## キーの入力状態を更新する関数 ##########
 VOID MY_ALL_KEYDOWN_UPDATE(VOID)
 {
 	//参考：https://dxlib.xsrv.jp/function/dxfunc_input.html
+
 	char TempKey[256];	//一時的に、現在のキーの入力状態を格納する
+
+	//直前のキー入力をとっておく
+	for (int i = 0; i < 256; i++)
+	{
+		OldAllKeyState[i] = AllKeyState[i];
+	}
 
 	GetHitKeyStateAll(TempKey); // 全てのキーの入力状態を得る
 
@@ -326,4 +372,54 @@ VOID MY_ALL_KEYDOWN_UPDATE(VOID)
 		}
 	}
 	return;
+}
+
+//キーを押しているか、キーコードで判断する
+//引数：int : キーコード：KEY_INPUT_???
+BOOL MY_KEY_DOWN(int KEY_INPUT_)
+{
+	//キーコードのキーを押しているとき
+	if (AllKeyState[KEY_INPUT_] != 0)
+	{
+		return TRUE;	//キーを押している
+	}
+	else
+	{
+		return FALSE;	//キーを押していない
+	}
+}
+
+//キーを押し上げたか、キーコードで判断する
+//引数：int : キーコード：KEY_INPUT_???
+BOOL MY_KEY_UP(int KEY_INPUT_)
+{
+	if (OldAllKeyState[KEY_INPUT_] >= 1		//直前は押していて
+		&& AllKeyState[KEY_INPUT_] == 0)	//今は押していないとき
+	{
+		return TRUE;	//キーを押し上げている
+	}
+	else
+	{
+		return FALSE;	//キーを押し上げていない
+	}
+}
+
+//キーを押し続けているか、キーコードで判断する
+//引　数：int：キーコード：KEY_INPUT_???
+//引　数：int：キーを押し続ける時間
+BOOL MY_KEYDOWN_KEEP(int KEY_INPUT_, int DownTime)
+{
+	//押し続ける時間 = 秒数 * FPS値
+	//例）60FPSのゲームで、1秒間押し続けられるなら、1秒 * 60FPS
+	int UpdateTime = DownTime * GAME_FPS;
+
+	if (AllKeyState[KEY_INPUT_] > UpdateTime)
+	{
+		return TRUE;	//押し続けている
+	}
+	else
+	{
+		return FALSE;	//押し続けていない
+	}
+
 }
