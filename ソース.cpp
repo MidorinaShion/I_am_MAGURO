@@ -540,6 +540,90 @@ VOID MY_PLAY_DRAW(VOID)
 //カメラの処理
 VOID MY_PROC_MAGURO(VOID)
 {
+	//プレイヤーの移動量を初期化
+	Maguro.move = VGet(0.0f, 0.0f, 0.0f);
+
+	if (Maguro.IsMove == TRUE)
+	{
+			//プレイヤーを自動スクロール
+			Maguro.move = VGet(0.0f, 0.0f, MAGURO_MOVE);
+	}
+
+	//左へ回転
+	if (MY_KEY_DOWN(KEY_INPUT_A) == TRUE)
+	{
+		//角度を変える
+		camera.HAngle += CAMERA_ANGLE_X_PLUS;
+
+		//逆走させないように、角度に制限を付ける
+		if (camera.HAngle > 90.0f)
+		{
+			camera.HAngle = 90.0f;
+		}
+	}
+
+	//右へ回転
+	if (MY_KEY_DOWN(KEY_INPUT_D) == TRUE)
+	{
+		//角度を変える
+		camera.HAngle -= CAMERA_ANGLE_X_PLUS;
+
+		//逆走させないように、角度に制限を付ける
+		if (camera.HAngle < -90.0f)
+		{
+			camera.HAngle = -90.0f;
+		}
+	}
+
+	//カメラの向きに合わせて、プレイヤーを移動させる
+	double SinParam = sin(double(camera.HAngle / 180.0f) * DX_PI_F);
+	double CosParam = cos(double(camera.HAngle / 180.0f) * DX_PI_F);
+	VECTOR TempMoveVector;
+	TempMoveVector.x = Maguro.move.x * CosParam - Maguro.move.z * SinParam;
+	TempMoveVector.y = 0.0f;
+	TempMoveVector.z = Maguro.move.x * SinParam + Maguro.move.z * CosParam;
+	Maguro.pos = VAdd(Maguro.pos, TempMoveVector);
+
+	// 新しい向きをセット
+	MV1SetRotationXYZ(Maguro.handle,
+		VGet(
+			0.0f,
+			-(camera.HAngle / 180.0f * DX_PI_F),
+			0.0f
+		)
+	);
+
+	//プレイヤーの位置を設定
+	MV1SetPosition(Maguro.handle, Maguro.pos);
+
+	//カメラの設定
+	VECTOR TempPosCalc1;
+	VECTOR TempPosCalc2;
+	VECTOR CameraLookAtPos;
+
+	// 注視点はキャラクターモデルの座標から CAMERA_HEIGHT 分だけ高い位置
+	CameraLookAtPos = Maguro.pos;
+	CameraLookAtPos.y += CAMERA_HEIGHT;
+
+	// 最初に垂直角度を反映した位置を算出
+	Maguro.VecSin = sin(double(camera.VAngle / 180.0f) * DX_PI_F);
+	Maguro.VecCos = cos(double(camera.VAngle / 180.0f) * DX_PI_F);
+	TempPosCalc1.x = 0.0f;
+	TempPosCalc1.y = Maguro.VecSin * CAMERA_DISTANCE;
+	TempPosCalc1.z = -Maguro.VecCos * CAMERA_DISTANCE;
+
+	// 次に水平角度を反映した位置を算出
+	Maguro.VecSin = sin(double(camera.HAngle / 180.0f) * DX_PI_F);
+	Maguro.VecCos = cos(double(camera.HAngle / 180.0f) * DX_PI_F);
+	TempPosCalc2.x = Maguro.VecCos * TempPosCalc1.x - Maguro.VecSin * TempPosCalc1.z;
+	TempPosCalc2.y = TempPosCalc1.y;
+	TempPosCalc2.z = Maguro.VecSin * TempPosCalc1.x + Maguro.VecCos * TempPosCalc1.z;
+
+	// 算出した座標に注視点の位置を加算したものがカメラの位置
+	camera.pos = VAdd(TempPosCalc2, CameraLookAtPos);
+
+	// カメラの設定に反映する
+	SetCameraPositionAndTarget_UpVecY(camera.pos, CameraLookAtPos);
 
 	return;
 }
@@ -603,6 +687,21 @@ VOID MY_DELETE_IMAGE(VOID)
 //3Dモデルをまとめて読み込む関数
 BOOL MY_LOAD_MODEL(VOID)
 {
+	//マグロを読み込む
+	strcpyDx(Maguro.path, MODEL_MAGURO_PATH);		//パスのコピー
+	Maguro.handle = MV1LoadModel(Maguro.path);		//モデル読み込み
+	//読み込みエラー
+	if (Maguro.handle == -1) 
+	{ 
+		MessageBox(
+			GetMainWindowHandle(),
+			Maguro.path,
+			ERR_LOAD_TITLE_MODEL,
+			MB_OK
+		);
+
+		return FALSE; 
+	}
 
 	return TRUE;
 }
@@ -610,6 +709,7 @@ BOOL MY_LOAD_MODEL(VOID)
 //3Dモデルをまとめて削除する関数
 VOID MY_DELETE_MODEL(VOID)
 {
+	MV1DeleteModel(Maguro.handle);
 
 	return;
 }
