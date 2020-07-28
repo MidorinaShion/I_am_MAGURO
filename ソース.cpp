@@ -423,3 +423,194 @@ BOOL MY_KEYDOWN_KEEP(int KEY_INPUT_, int DownTime)
 	}
 
 }
+
+//スタート画面
+VOID MY_START(VOID)
+{
+	MY_START_PROC();	//スタート画面の処理
+	MY_START_DRAW();	//スタート画面の描画
+
+	return;
+
+}
+
+//スタート画面の処理
+VOID MY_START_PROC(VOID)
+{
+	//ひとまずはエンターキーでプレイシーンへ
+	if (MY_KEY_DOWN(KEY_INPUT_RETURN) == TRUE)
+	{
+		//プレイシーンへ移動する
+		GameScene = GAME_SCENE_PLAY;
+
+		return;
+	}
+
+	return;
+}
+
+//スタート画面の描画
+VOID MY_START_DRAW(VOID)
+{
+	//背景描画
+	DrawGraph(ImageTitleBK.x, ImageTitleBK.y, ImageTitleBK.handle, TRUE);
+
+	//タイトルロゴ描画
+	DrawGraph(ImageTitleLOGO.x, ImageTitleLOGO.y, ImageTitleLOGO.handle, TRUE);
+
+	//タイトルスタート描画
+	/*if (ImageTitlePUSH.IsDraw == TRUE)
+	{
+		DrawGraph(ImageTitlePUSH.image.x, ImageTitlePUSH.image.y, ImageTitlePUSH.image.handle, TRUE);
+	}*/
+
+	DrawString(0, 0, "スタート画面(エンターキーを押して下さい)", GetColor(255, 255, 255));
+	return;
+}
+
+//プレイ画面
+VOID MY_PLAY(VOID)
+{
+	MY_PLAY_PROC();	//プレイ画面の処理
+	MY_PLAY_DRAW();	//プレイ画面の描画
+	DrawString(0, 0, "プレイ画面", GetColor(255, 255, 255));
+
+	return;
+}
+
+//プレイ画面の処理
+VOID MY_PLAY_PROC(VOID)
+{
+	//マップの外にいたら動けない
+	if (Maguro.pos.x <= -20000.0f) { Maguro.IsMove = FALSE; }
+	if (Maguro.pos.x >= 20000.0f) { Maguro.IsMove = FALSE; }
+
+	//描画の判断
+	for (int tate = 0; tate < MAP_TATE_MAX; tate++)
+	{
+		for (int yoko = 0; yoko < MAP_YOKO_MAX; yoko++)
+		{
+			//最初は全て描画する
+			/*ModelAste_ue[tate][yoko].IsDraw = TRUE;	//エサ類置換予定地
+			ModelAste[tate][yoko].IsDraw = TRUE;
+			ModelAste_sita[tate][yoko].IsDraw = TRUE;*/
+
+			//マグロの前すぎるモデルは描画しない
+			if (MaguroToMapZ + 20 < tate)
+			{
+				/*ModelAste_ue[tate][yoko].IsDraw = FALSE;
+				ModelAste[tate][yoko].IsDraw = FALSE;
+				ModelAste_sita[tate][yoko].IsDraw = FALSE;*/
+			}
+
+			//マグロの後ろのモデルは描画しない
+			if (MaguroToMapZ - 1 > tate)
+			{
+				/*ModelAste_ue[tate][yoko].IsDraw = FALSE;
+				ModelAste[tate][yoko].IsDraw = FALSE;
+				ModelAste_sita[tate][yoko].IsDraw = FALSE;*/
+			}
+		}
+	}
+
+	//ひとまずはスペースキーでエンド画面へ
+	if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
+	{
+		//プレイシーンへ移動する
+		GameScene = GAME_SCENE_END;
+
+	}
+
+	//マグロの移動
+	MY_PROC_MAGURO();
+
+	//マグロの位置をマップと対応付ける
+	MaguroToMapX = int(Maguro.pos.x / MAP_YOKO_SIZE);
+	MaguroToMapZ = int(Maguro.pos.z / MAP_TATE_SIZE);
+
+}
+
+//プレイ画面の描画
+VOID MY_PLAY_DRAW(VOID)
+{
+
+	return;
+}
+
+//カメラの処理
+VOID MY_PROC_MAGURO(VOID)
+{
+
+	return;
+}
+
+//エンド画面
+VOID MY_END(VOID)
+{
+	MY_END_PROC();	//エンド画面の処理
+	MY_END_DRAW();	//エンド画面の描画
+	return;
+}
+
+//エンド画面の処理
+VOID MY_END_PROC(VOID)
+{
+	//エスケープキーを押したら、タイトルシーンへ移動する
+	if (MY_KEY_DOWN(KEY_INPUT_ESCAPE) == TRUE)
+	{
+		//ゲーム初期化
+		MY_GAME_INIT();
+
+		//タイトルシーンへ移動する
+		GameScene = GAME_SCENE_START;
+
+		return;
+	}
+
+	return;
+}
+
+//エンド画面の描画
+VOID MY_END_DRAW(VOID)
+{
+	MY_PLAY_DRAW();	//プレイ画面の描画
+	DrawString(0, 0, "エンド画面", GetColor(255, 255, 255));
+
+	return;
+}
+
+//ゲーム初期化画面
+BOOL MY_GAME_INIT(VOID)
+{
+
+	return TRUE;
+}
+
+//画像をまとめて読み込む関数
+BOOL MY_LOAD_IMAGE(VOID)
+{
+
+	return TRUE;
+}
+
+//画像をまとめて削除する関数
+VOID MY_DELETE_IMAGE(VOID)
+{
+
+	return;
+}
+
+//3Dモデルをまとめて読み込む関数
+BOOL MY_LOAD_MODEL(VOID)
+{
+
+	return TRUE;
+}
+
+//3Dモデルをまとめて削除する関数
+VOID MY_DELETE_MODEL(VOID)
+{
+
+	return;
+}
+
