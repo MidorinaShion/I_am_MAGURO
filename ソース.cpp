@@ -2,6 +2,9 @@
 #include <math.h>
 
 //########## マクロ定義 ##########
+
+#define DEBUG_MODE			FALSE	//デバッグモード
+
 #define GAME_WIDTH			1000	//画面の横の大きさ
 #define GAME_HEIGHT			600	//画面の縦の大きさ
 #define GAME_COLOR			32	//画面のカラービット
@@ -29,10 +32,10 @@
 #define IMAGE_TITLE_HOWTO_PATH	//あそびかた
 
 //カメラの設定
-#define CAMERA_NEAR			1.0f		//どこまで近くを写すか
+#define CAMERA_NEAR			200.0f		//どこまで近くを写すか
 #define CAMERA_FAR			60000.0f	//どこまで遠くを写すか
-#define CAMERA_HEIGHT		300.0f		//カメラの注視点の高さ
-#define CAMERA_DISTANCE		10.0f		//カメラと注視点の距離
+#define CAMERA_HEIGHT		0.0f		//カメラの注視点の高さ
+#define CAMERA_DISTANCE		1000.0f		//カメラと注視点の距離
 #define CAMERA_INIT_V_ANGLE	0.0f		//カメラの向きデフォルト(垂直) / -90が上 90が下
 #define CAMERA_INIT_H_ANGLE	0.0f		//カメラの向きデフォルト(水平) / -90が左 90が右
 #define CAMERA_ANGLE_X_PLUS	1.0f		//カメラの角度(X)の加算値
@@ -533,6 +536,23 @@ VOID MY_PLAY_PROC(VOID)
 //プレイ画面の描画
 VOID MY_PLAY_DRAW(VOID)
 {
+	// カメラのクリッピング距離を設定
+	SetCameraNearFar(CAMERA_NEAR, CAMERA_FAR);
+
+	SetLightDirection(VGet(-1.0f, -1.0f, 1.0f));		// 標準ライトの方向を設定する
+	MV1DrawModel(Maguro.handle);						//マグロを描画
+
+	//デバッグ用表示
+	if (DEBUG_MODE == TRUE)
+	{
+		DrawFormatString(0, 20, GetColor(255, 255, 255), "HAngle:%.2lf / VAngle:%.2lf", camera.HAngle, camera.VAngle);
+		DrawFormatString(0, 40, GetColor(255, 255, 255), "MaguroToMapX:%2d / MaguroToMapZ:%2d", MaguroToMapX, MaguroToMapZ);
+		DrawFormatString(0, 60, GetColor(255, 255, 255), "MaguroX:%.2lf / MaguroZ:%.2lf", Maguro.pos.x, Maguro.pos.z);
+
+		//デバッグ用のカプセルの表示
+		int Bunkatsu = 8;
+		DrawCapsule3D(MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius, Bunkatsu, GetColor(255, 255, 255), GetColor(255, 255, 255), FALSE);
+	}
 
 	return;
 }
@@ -540,12 +560,12 @@ VOID MY_PLAY_DRAW(VOID)
 //カメラの処理
 VOID MY_PROC_MAGURO(VOID)
 {
-	//プレイヤーの移動量を初期化
+	//マグロの移動量を初期化
 	Maguro.move = VGet(0.0f, 0.0f, 0.0f);
 
 	if (Maguro.IsMove == TRUE)
 	{
-			//プレイヤーを自動スクロール
+			//マグロを自動スクロール
 			Maguro.move = VGet(0.0f, 0.0f, MAGURO_MOVE);
 	}
 
@@ -554,12 +574,6 @@ VOID MY_PROC_MAGURO(VOID)
 	{
 		//角度を変える
 		camera.HAngle += CAMERA_ANGLE_X_PLUS;
-
-		//逆走させないように、角度に制限を付ける
-		if (camera.HAngle > 90.0f)
-		{
-			camera.HAngle = 90.0f;
-		}
 	}
 
 	//右へ回転
@@ -567,15 +581,9 @@ VOID MY_PROC_MAGURO(VOID)
 	{
 		//角度を変える
 		camera.HAngle -= CAMERA_ANGLE_X_PLUS;
-
-		//逆走させないように、角度に制限を付ける
-		if (camera.HAngle < -90.0f)
-		{
-			camera.HAngle = -90.0f;
-		}
 	}
 
-	//カメラの向きに合わせて、プレイヤーを移動させる
+	//カメラの向きに合わせて、マグロを移動させる
 	double SinParam = sin(double(camera.HAngle / 180.0f) * DX_PI_F);
 	double CosParam = cos(double(camera.HAngle / 180.0f) * DX_PI_F);
 	VECTOR TempMoveVector;
@@ -593,7 +601,7 @@ VOID MY_PROC_MAGURO(VOID)
 		)
 	);
 
-	//プレイヤーの位置を設定
+	//マグロの位置を設定
 	MV1SetPosition(Maguro.handle, Maguro.pos);
 
 	//カメラの設定
