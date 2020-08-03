@@ -3,7 +3,7 @@
 
 //########## マクロ定義 ##########
 
-#define DEBUG_MODE			FALSE	//デバッグモード
+#define DEBUG_MODE			TRUE	//デバッグモード
 
 #define GAME_WIDTH			1000	//画面の横の大きさ
 #define GAME_HEIGHT			600	//画面の縦の大きさ
@@ -32,7 +32,7 @@
 #define IMAGE_TITLE_HOWTO_PATH	//あそびかた
 
 //カメラの設定
-#define CAMERA_NEAR			200.0f		//どこまで近くを写すか
+#define CAMERA_NEAR			500.0f		//どこまで近くを写すか
 #define CAMERA_FAR			60000.0f	//どこまで遠くを写すか
 #define CAMERA_HEIGHT		0.0f		//カメラの注視点の高さ
 #define CAMERA_DISTANCE		1000.0f		//カメラと注視点の距離
@@ -283,9 +283,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		ScreenFlip();	//モニタのリフレッシュレートの速さで画面を再描画
 
 		MY_FPS_WAIT();	//FPSの処理(待つ)
-
-		//マグロを常に奥へ
-		//ModelPos.z += 10.0f;
 
 	}
 
