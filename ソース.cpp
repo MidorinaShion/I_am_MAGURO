@@ -25,11 +25,13 @@
 #define MODEL_PURA_PATH		TEXT(".\\mqoモデル\\プランクトン\\プランクトン.mqo")
 
 //画像のパス(仮置き)
-#define IMAGE_TITLE_BK_PATH		//タイトルの背景画像
-#define IMAGE_TITLE_LOGO_PATH	//タイトルロゴ
-#define IMAGE_TITLE_START_PATH	//はじめる
-#define IMAGE_TITLE_END_PATH	//おわる
-#define IMAGE_TITLE_HOWTO_PATH	//あそびかた
+#define IMAGE_TITLE_BK_PATH		TEXT(".\\画像\\タイトル背景.png")
+#define IMAGE_TITLE_LOGO_PATH	TEXT(".\\画像\\タイトルロゴ.png")
+#define IMAGE_TITLE_START_PATH	TEXT(".\\画像\\はじめる.png")
+#define IMAGE_TITLE_END_PATH	TEXT(".\\画像\\おわる1.png")
+#define IMAGE_TITLE_HOWTO_PATH	TEXT(".\\画像\\あそびかた.png")
+
+#define IMAGE_PLAY_BK_PATH	TEXT(".\\画像\\プレイ背景.png")
 
 //カメラの設定
 #define CAMERA_NEAR			500.0f		//どこまで近くを写すか
@@ -37,7 +39,7 @@
 #define CAMERA_HEIGHT		0.0f		//カメラの注視点の高さ
 #define CAMERA_DISTANCE		1000.0f		//カメラと注視点の距離
 #define CAMERA_INIT_V_ANGLE	0.0f		//カメラの向きデフォルト(垂直) / -90が上 90が下
-#define CAMERA_INIT_H_ANGLE	0.0f		//カメラの向きデフォルト(水平) / -90が左 90が右
+#define CAMERA_INIT_H_ANGLE	180.0f		//カメラの向きデフォルト(水平) / -90が左 90が右
 #define CAMERA_ANGLE_X_PLUS	1.0f		//カメラの角度(X)の加算値
 #define CAMERA_ANGLE_MAX_X	90.0f		//カメラのMAX角度(X)
 #define CAMERA_ANGLE_MAX_Y	90.0f		//カメラのMAX角度(Y)
@@ -150,6 +152,8 @@ IMAGE ImageTitleLOGO;
 IMAGE ImageTitleStart;
 IMAGE ImageTitleEnd;
 IMAGE ImageTitleHowTo;
+
+IMAGE ImagePlayBK;
 
 //マグロの位置をマップと対応付ける
 int MaguroToMapX;
@@ -471,6 +475,9 @@ VOID MY_START_DRAW(VOID)
 //プレイ画面
 VOID MY_PLAY(VOID)
 {
+	//背景描画
+	DrawGraph(ImagePlayBK.x, ImagePlayBK.y, ImagePlayBK.handle, TRUE);
+
 	MY_PLAY_PROC();	//プレイ画面の処理
 	MY_PLAY_DRAW();	//プレイ画面の描画
 	DrawString(0, 0, "プレイ画面", GetColor(255, 255, 255));
@@ -678,6 +685,35 @@ BOOL MY_GAME_INIT(VOID)
 //画像をまとめて読み込む関数
 BOOL MY_LOAD_IMAGE(VOID)
 {
+	//タイトル背景
+	wsprintf(ImageTitleBK.path, IMAGE_TITLE_BK_PATH);	//ファイルパスをコピー
+	ImageTitleBK.handle = LoadGraph(ImageTitleBK.path);	//画像をメモリに読み込み、ハンドルを取得
+	if (ImageTitleBK.handle == -1) { MessageBox(GetMainWindowHandle(), ImageTitleBK.path, ERR_LOAD_TITLE_IMAGE, MB_OK); return FALSE; }
+
+	//画像サイズを取得
+	GetGraphSize(ImageTitleBK.handle, &ImageTitleBK.width, &ImageTitleBK.height);
+	ImageTitleBK.x = GAME_WIDTH / 2 - ImageTitleBK.width / 2;	//中央揃え
+	ImageTitleBK.y = GAME_HEIGHT / 2 - ImageTitleBK.height / 2;	//中央揃え
+
+	//タイトルロゴ
+	wsprintf(ImageTitleLOGO.path, IMAGE_TITLE_LOGO_PATH);	//ファイルパスをコピー
+	ImageTitleLOGO.handle = LoadGraph(ImageTitleLOGO.path);	//画像をメモリに読み込み、ハンドルを取得
+	if (ImageTitleLOGO.handle == -1) { MessageBox(GetMainWindowHandle(), ImageTitleLOGO.path, ERR_LOAD_TITLE_IMAGE, MB_OK); return FALSE; }
+
+	//画像サイズを取得
+	GetGraphSize(ImageTitleLOGO.handle, &ImageTitleLOGO.width, &ImageTitleLOGO.height);
+	ImageTitleLOGO.x = GAME_WIDTH / 2 - ImageTitleLOGO.width / 2;	//X座標
+	ImageTitleLOGO.y = GAME_HEIGHT / 2 - ImageTitleLOGO.height / 2;	//Y座標
+
+	//プレイ背景
+	wsprintf(ImagePlayBK.path, IMAGE_PLAY_BK_PATH);	//ファイルパスをコピー
+	ImagePlayBK.handle = LoadGraph(ImagePlayBK.path);	//画像をメモリに読み込み、ハンドルを取得
+	if (ImagePlayBK.handle == -1) { MessageBox(GetMainWindowHandle(), ImagePlayBK.path, ERR_LOAD_TITLE_IMAGE, MB_OK); return FALSE; }
+
+	//画像サイズを取得
+	GetGraphSize(ImagePlayBK.handle, &ImagePlayBK.width, &ImagePlayBK.height);
+	ImagePlayBK.x = GAME_WIDTH / 2 - ImagePlayBK.width / 2;	//中央揃え
+	ImagePlayBK.y = GAME_HEIGHT / 2 - ImagePlayBK.height / 2;	//中央揃え
 
 	return TRUE;
 }
@@ -685,6 +721,9 @@ BOOL MY_LOAD_IMAGE(VOID)
 //画像をまとめて削除する関数
 VOID MY_DELETE_IMAGE(VOID)
 {
+	DeleteGraph(ImageTitleBK.handle);
+	DeleteGraph(ImageTitleLOGO.handle);
+	DeleteGraph(ImagePlayBK.handle);
 
 	return;
 }
