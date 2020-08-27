@@ -30,6 +30,7 @@
 #define IMAGE_TITLE_START_PATH	TEXT(".\\画像\\はじめる.png")
 #define IMAGE_TITLE_END_PATH	TEXT(".\\画像\\おわる1.png")
 #define IMAGE_TITLE_HOWTO_PATH	TEXT(".\\画像\\あそびかた.png")
+#define IMAGE_HOWTO_BK_PATH		TEXT(".\\画像\\あそびかた背景.png")
 
 #define IMAGE_PLAY_BK_PATH	TEXT(".\\画像\\プレイ背景.png")
 
@@ -67,6 +68,7 @@
 enum GAME_SCENE
 {
 	GAME_SCENE_START,
+	GAME_SCENE_HOWTO,
 	GAME_SCENE_PLAY,
 	GAME_SCENE_END
 };
@@ -152,6 +154,7 @@ IMAGE ImageTitleLOGO;
 IMAGE ImageTitleStart;
 IMAGE ImageTitleEnd;
 IMAGE ImageTitleHowTo;
+IMAGE ImageHowToBK;
 
 IMAGE ImagePlayBK;
 
@@ -197,6 +200,10 @@ BOOL MY_GAME_INIT(VOID);	//ゲーム初期化画面
 VOID MY_START(VOID);		//スタート画面
 VOID MY_START_PROC(VOID);	//スタート画面の処理
 VOID MY_START_DRAW(VOID);	//スタート画面の描画
+
+VOID MY_HOWTO(VOID);		//あそびかた画面
+VOID MY_HOWTO_PROC(VOID);	
+VOID MY_HOWTO_DRAW(VOID);	
 
 VOID MY_PLAY(VOID);			//プレイ画面
 VOID MY_PLAY_PROC(VOID);	//プレイ画面の処理
@@ -270,6 +277,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		case GAME_SCENE_START:
 			MY_START();	//スタート画面
+			break;
+
+		case GAME_SCENE_HOWTO:
+			MY_HOWTO();	//あそびかた画面
 			break;
 
 		case GAME_SCENE_PLAY:
@@ -441,11 +452,18 @@ VOID MY_START(VOID)
 //スタート画面の処理
 VOID MY_START_PROC(VOID)
 {
-	//ひとまずはエンターキーでプレイシーンへ
-	if (MY_KEY_DOWN(KEY_INPUT_RETURN) == TRUE)
+	//エンターキーでプレイシーンへ
+	if (MY_KEY_UP(KEY_INPUT_RETURN) == TRUE)
 	{
 		//プレイシーンへ移動する
 		GameScene = GAME_SCENE_PLAY;
+
+		return;
+	}
+	else if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
+	{
+		//あそびかたへ移動する
+		GameScene = GAME_SCENE_HOWTO;
 
 		return;
 	}
@@ -462,13 +480,47 @@ VOID MY_START_DRAW(VOID)
 	//タイトルロゴ描画
 	DrawGraph(ImageTitleLOGO.x, ImageTitleLOGO.y, ImageTitleLOGO.handle, TRUE);
 
-	//タイトルスタート描画
-	/*if (ImageTitlePUSH.IsDraw == TRUE)
-	{
-		DrawGraph(ImageTitlePUSH.image.x, ImageTitlePUSH.image.y, ImageTitlePUSH.image.handle, TRUE);
-	}*/
+	//コマンド類
+	DrawGraph(ImageTitleStart.x, ImageTitleStart.y, ImageTitleStart.handle, TRUE);
+	DrawGraph(ImageTitleEnd.x, ImageTitleEnd.y, ImageTitleEnd.handle, TRUE);
+	DrawGraph(ImageTitleHowTo.x, ImageTitleHowTo.y, ImageTitleHowTo.handle, TRUE);
 
-	DrawString(0, 0, "スタート画面(エンターキーを押して下さい)", GetColor(255, 255, 255));
+	DrawString(0, 0, "スタート画面", GetColor(255, 255, 255));
+	return;
+}
+
+//あそびかた画面
+VOID MY_HOWTO(VOID)
+{
+	MY_HOWTO_PROC();	//スタート画面の処理
+	MY_HOWTO_DRAW();	//スタート画面の描画
+
+	return;
+
+}
+
+//あそびかた画面の処理
+VOID MY_HOWTO_PROC(VOID)
+{
+	//エンターキーでタイトルへ
+	if (MY_KEY_UP(KEY_INPUT_RETURN) == TRUE)
+	{
+		//タイトルへ移動する
+		GameScene = GAME_SCENE_START;
+
+		return;
+	}
+
+	return;
+}
+
+//あそびかた画面の描画
+VOID MY_HOWTO_DRAW(VOID)
+{
+	//背景描画
+	DrawGraph(ImageHowToBK.x, ImageHowToBK.y, ImageHowToBK.handle, TRUE);
+
+	DrawString(0, 0, "あそびかた画面", GetColor(255, 255, 255));
 	return;
 }
 
@@ -523,7 +575,7 @@ VOID MY_PLAY_PROC(VOID)
 	//ひとまずはスペースキーでエンド画面へ
 	if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
 	{
-		//プレイシーンへ移動する
+		//エンドシーンへ移動する
 		GameScene = GAME_SCENE_END;
 
 	}
@@ -554,8 +606,12 @@ VOID MY_PLAY_DRAW(VOID)
 		DrawFormatString(0, 60, GetColor(255, 255, 255), "MaguroX:%.2lf / MaguroZ:%.2lf", Maguro.pos.x, Maguro.pos.z);
 
 		//デバッグ用のカプセルの表示
-		int Bunkatsu = 8;
-		DrawCapsule3D(MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius, Bunkatsu, GetColor(255, 255, 255), GetColor(255, 255, 255), FALSE);
+		//int Bunkatsu = 8;
+		//DrawCapsule3D(MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius, Bunkatsu, GetColor(255, 255, 255), GetColor(255, 255, 255), FALSE);
+	
+		//デバッグ用エビ
+		MV1DrawModel(Ebi.handle);
+	
 	}
 
 	return;
@@ -651,8 +707,8 @@ VOID MY_END(VOID)
 //エンド画面の処理
 VOID MY_END_PROC(VOID)
 {
-	//エスケープキーを押したら、タイトルシーンへ移動する
-	if (MY_KEY_DOWN(KEY_INPUT_ESCAPE) == TRUE)
+	//エンターキーを押したら、タイトルシーンへ移動する
+	if (MY_KEY_UP(KEY_INPUT_RETURN) == TRUE)
 	{
 		//ゲーム初期化
 		MY_GAME_INIT();
@@ -670,7 +726,7 @@ VOID MY_END_PROC(VOID)
 VOID MY_END_DRAW(VOID)
 {
 	MY_PLAY_DRAW();	//プレイ画面の描画
-	DrawString(0, 0, "エンド画面", GetColor(255, 255, 255));
+	DrawString(0, 0, "エンド画面(エンターキーを押してください)", GetColor(255, 255, 255));
 
 	return;
 }
@@ -702,8 +758,48 @@ BOOL MY_LOAD_IMAGE(VOID)
 
 	//画像サイズを取得
 	GetGraphSize(ImageTitleLOGO.handle, &ImageTitleLOGO.width, &ImageTitleLOGO.height);
-	ImageTitleLOGO.x = GAME_WIDTH / 2 - ImageTitleLOGO.width / 2;	//X座標
-	ImageTitleLOGO.y = GAME_HEIGHT / 2 - ImageTitleLOGO.height / 2;	//Y座標
+	ImageTitleLOGO.x = 151.0;	//X座標
+	ImageTitleLOGO.y = 50.0;	//Y座標
+
+	//はじめる
+	wsprintf(ImageTitleStart.path, IMAGE_TITLE_START_PATH);	//ファイルパスをコピー
+	ImageTitleStart.handle = LoadGraph(ImageTitleStart.path);	//画像をメモリに読み込み、ハンドルを取得
+	if (ImageTitleStart.handle == -1) { MessageBox(GetMainWindowHandle(), ImageTitleStart.path, ERR_LOAD_TITLE_IMAGE, MB_OK); return FALSE; }
+
+	//画像サイズを取得
+	GetGraphSize(ImageTitleStart.handle, &ImageTitleStart.width, &ImageTitleStart.height);
+	ImageTitleStart.x = 145.5;	//X座標
+	ImageTitleStart.y = 445.0;	//Y座標
+
+	//おわる
+	wsprintf(ImageTitleEnd.path, IMAGE_TITLE_END_PATH);	//ファイルパスをコピー
+	ImageTitleEnd.handle = LoadGraph(ImageTitleEnd.path);	//画像をメモリに読み込み、ハンドルを取得
+	if (ImageTitleEnd.handle == -1) { MessageBox(GetMainWindowHandle(), ImageTitleEnd.path, ERR_LOAD_TITLE_IMAGE, MB_OK); return FALSE; }
+
+	//画像サイズを取得
+	GetGraphSize(ImageTitleEnd.handle, &ImageTitleEnd.width, &ImageTitleEnd.height);
+	ImageTitleEnd.x = 422.0;	//X座標
+	ImageTitleEnd.y = 445.0;	//Y座標
+
+	//あそびかた
+	wsprintf(ImageTitleHowTo.path, IMAGE_TITLE_HOWTO_PATH);	//ファイルパスをコピー
+	ImageTitleHowTo.handle = LoadGraph(ImageTitleHowTo.path);	//画像をメモリに読み込み、ハンドルを取得
+	if (ImageTitleHowTo.handle == -1) { MessageBox(GetMainWindowHandle(), ImageTitleHowTo.path, ERR_LOAD_TITLE_IMAGE, MB_OK); return FALSE; }
+
+	//画像サイズを取得
+	GetGraphSize(ImageTitleHowTo.handle, &ImageTitleHowTo.width, &ImageTitleHowTo.height);
+	ImageTitleHowTo.x = 654.5;	//X座標
+	ImageTitleHowTo.y = 445.0;	//Y座標
+
+	//あそびかた背景
+	wsprintf(ImageHowToBK.path, IMAGE_HOWTO_BK_PATH);	//ファイルパスをコピー
+	ImageHowToBK.handle = LoadGraph(ImageHowToBK.path);	//画像をメモリに読み込み、ハンドルを取得
+	if (ImageHowToBK.handle == -1) { MessageBox(GetMainWindowHandle(), ImageHowToBK.path, ERR_LOAD_TITLE_IMAGE, MB_OK); return FALSE; }
+
+	//画像サイズを取得
+	GetGraphSize(ImageHowToBK.handle, &ImageHowToBK.width, &ImageHowToBK.height);
+	ImageHowToBK.x = GAME_WIDTH / 2 - ImageHowToBK.width / 2;	//中央揃え
+	ImageHowToBK.y = GAME_HEIGHT / 2 - ImageHowToBK.height / 2;	//中央揃え
 
 	//プレイ背景
 	wsprintf(ImagePlayBK.path, IMAGE_PLAY_BK_PATH);	//ファイルパスをコピー
@@ -723,6 +819,9 @@ VOID MY_DELETE_IMAGE(VOID)
 {
 	DeleteGraph(ImageTitleBK.handle);
 	DeleteGraph(ImageTitleLOGO.handle);
+	DeleteGraph(ImageTitleStart.handle);
+	DeleteGraph(ImageTitleEnd.handle);
+	DeleteGraph(ImageTitleHowTo.handle);
 	DeleteGraph(ImagePlayBK.handle);
 
 	return;
@@ -747,6 +846,22 @@ BOOL MY_LOAD_MODEL(VOID)
 		return FALSE; 
 	}
 
+	//エビを読み込む
+	strcpyDx(Ebi.path, MODEL_EBI_PATH);		//パスのコピー
+	Ebi.handle = MV1LoadModel(Ebi.path);		//モデル読み込み
+	//読み込みエラー
+	if (Ebi.handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),
+			Ebi.path,
+			ERR_LOAD_TITLE_MODEL,
+			MB_OK
+		);
+
+		return FALSE;
+	}
+
 	return TRUE;
 }
 
@@ -754,6 +869,7 @@ BOOL MY_LOAD_MODEL(VOID)
 VOID MY_DELETE_MODEL(VOID)
 {
 	MV1DeleteModel(Maguro.handle);
+	MV1DeleteModel(Ebi.handle);
 
 	return;
 }
