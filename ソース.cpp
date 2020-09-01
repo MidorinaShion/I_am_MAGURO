@@ -46,8 +46,8 @@
 #define CAMERA_ANGLE_MAX_Y	90.0f		//カメラのMAX角度(Y)
 
 //マップ
-#define MAP_TATE_MAX	150
-#define MAP_YOKO_MAX	150
+#define MAP_TATE_MAX	1500
+#define MAP_YOKO_MAX	1500
 
 #define MAP_TATE_SIZE	(100.0f * 2.0f) //間隔を2.0倍開ける
 #define MAP_YOKO_SIZE	(100.0f * 2.0f)
@@ -550,24 +550,24 @@ VOID MY_PLAY_PROC(VOID)
 		for (int yoko = 0; yoko < MAP_YOKO_MAX; yoko++)
 		{
 			//最初は全て描画する
-			/*ModelAste_ue[tate][yoko].IsDraw = TRUE;	//エサ類置換予定地
-			ModelAste[tate][yoko].IsDraw = TRUE;
-			ModelAste_sita[tate][yoko].IsDraw = TRUE;*/
+			Ebi.IsDraw = TRUE;	//エサ類置換予定地
+			Pura.IsDraw = TRUE;
+			Ika.IsDraw = TRUE;
 
-			//マグロの前すぎるモデルは描画しない
-			if (MaguroToMapZ + 20 < tate)
-			{
-				/*ModelAste_ue[tate][yoko].IsDraw = FALSE;
-				ModelAste[tate][yoko].IsDraw = FALSE;
-				ModelAste_sita[tate][yoko].IsDraw = FALSE;*/
-			}
+			////マグロの前すぎるモデルは描画しない
+			//if (MaguroToMapZ + 20 < tate)
+			//{
+			//	Ebi.IsDraw = FALSE;
+			//	Pura.IsDraw = FALSE;
+			//	Ika.IsDraw = FALSE;
+			//}
 
 			//マグロの後ろのモデルは描画しない
 			if (MaguroToMapZ - 1 > tate)
 			{
-				/*ModelAste_ue[tate][yoko].IsDraw = FALSE;
-				ModelAste[tate][yoko].IsDraw = FALSE;
-				ModelAste_sita[tate][yoko].IsDraw = FALSE;*/
+				Ebi.IsDraw = FALSE;
+				Pura.IsDraw = FALSE;
+				Ika.IsDraw = FALSE;
 			}
 		}
 	}
@@ -609,8 +609,20 @@ VOID MY_PLAY_DRAW(VOID)
 		//int Bunkatsu = 8;
 		//DrawCapsule3D(MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius, Bunkatsu, GetColor(255, 255, 255), GetColor(255, 255, 255), FALSE);
 	
-		//デバッグ用エビ
+		//デバッグ用の位置を設定
+		Ebi.pos = VGet(5000, 0, 7500);
+		MV1SetPosition(Ebi.handle, Ebi.pos);
+
+		Pura.pos = VGet(-2500, 0, -500);
+		MV1SetPosition(Pura.handle, Pura.pos);
+
+		Ika.pos = VGet(1000, 0, 2500);
+		MV1SetPosition(Ika.handle, Ika.pos);
+
+		//デバッグ用モデルの描画
 		MV1DrawModel(Ebi.handle);
+		MV1DrawModel(Pura.handle);
+		MV1DrawModel(Ika.handle);
 	
 	}
 
@@ -862,6 +874,38 @@ BOOL MY_LOAD_MODEL(VOID)
 		return FALSE;
 	}
 
+	//プランクトンを読み込む
+	strcpyDx(Pura.path, MODEL_PURA_PATH);		//パスのコピー
+	Pura.handle = MV1LoadModel(Pura.path);		//モデル読み込み
+	//読み込みエラー
+	if (Pura.handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),
+			Pura.path,
+			ERR_LOAD_TITLE_MODEL,
+			MB_OK
+		);
+
+		return FALSE;
+	}
+
+	//イカを読み込む
+	strcpyDx(Ika.path, MODEL_IKA_PATH);		//パスのコピー
+	Ika.handle = MV1LoadModel(Ika.path);		//モデル読み込み
+	//読み込みエラー
+	if (Ika.handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),
+			Ika.path,
+			ERR_LOAD_TITLE_MODEL,
+			MB_OK
+		);
+
+		return FALSE;
+	}
+
 	return TRUE;
 }
 
@@ -870,6 +914,8 @@ VOID MY_DELETE_MODEL(VOID)
 {
 	MV1DeleteModel(Maguro.handle);
 	MV1DeleteModel(Ebi.handle);
+	MV1DeleteModel(Pura.handle);
+	MV1DeleteModel(Ika.handle);
 
 	return;
 }
