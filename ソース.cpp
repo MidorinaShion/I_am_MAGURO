@@ -46,8 +46,8 @@
 #define CAMERA_ANGLE_MAX_Y	90.0f		//カメラのMAX角度(Y)
 
 //マップ
-#define MAP_TATE_MAX	1500
-#define MAP_YOKO_MAX	1500
+#define MAP_TATE_MAX	15000
+#define MAP_YOKO_MAX	15000
 
 #define MAP_TATE_SIZE	(100.0f * 2.0f) //間隔を2.0倍開ける
 #define MAP_YOKO_SIZE	(100.0f * 2.0f)
@@ -55,6 +55,11 @@
 //マグロ関係
 #define MAGURO_MOVE			10.0f	//スピード
 #define MAGURO_CAP_RADIUS	30.0f	//当たり判定のカプセルの半径
+
+//エサの数
+#define EBI_MAX		50
+#define PURA_MAX	100
+#define IKA_MAX		30
 
 //エラーメッセージ
 #define ERR_LOAD_TITLE_IMAGE	TEXT("画像読み込みエラー")
@@ -144,12 +149,12 @@ CAMERA camera;
 
 //モデル
 MODEL Maguro;	//マグロ
-MODEL Ebi;		//エビ
-MODEL Ika;		//イカ
-MODEL Pura;		//プランクトン
+MODEL Ebi[EBI_MAX];		//エビ
+MODEL Ika[IKA_MAX];		//イカ
+MODEL Pura[PURA_MAX];		//プランクトン
 
 //画像
-IMAGE ImageTitleBK;		//仮置き
+IMAGE ImageTitleBK;		
 IMAGE ImageTitleLOGO;
 IMAGE ImageTitleStart;
 IMAGE ImageTitleEnd;
@@ -169,6 +174,10 @@ float MaguroCollRadius = MAGURO_CAP_RADIUS;		//カプセルの半径
 
 //マグロが動けたときの座標を記憶
 VECTOR MaguroMovePos;
+
+//マグロのパラメータ
+float Maguro_O2 = 100.0;	//酸素
+float Maguro_Hp = 1000.0;	//空腹度
 
 //int MaguroScale = 0.05;				//最初のマグロの大きさ
 //
@@ -541,8 +550,10 @@ VOID MY_PLAY(VOID)
 VOID MY_PLAY_PROC(VOID)
 {
 	//マップの外にいたら動けない
-	if (Maguro.pos.x <= -20000.0f) { Maguro.IsMove = FALSE; }
-	if (Maguro.pos.x >= 20000.0f) { Maguro.IsMove = FALSE; }
+	if (Maguro.pos.x <= -15000.0f) { Maguro.IsMove = FALSE; }
+	if (Maguro.pos.x >= 15000.0f) { Maguro.IsMove = FALSE; }
+	if (Maguro.pos.z <= -15000.0f) { Maguro.IsMove = FALSE; }
+	if (Maguro.pos.z>= 15000.0f) { Maguro.IsMove = FALSE; }
 
 	//描画の判断
 	for (int tate = 0; tate < MAP_TATE_MAX; tate++)
@@ -550,9 +561,20 @@ VOID MY_PLAY_PROC(VOID)
 		for (int yoko = 0; yoko < MAP_YOKO_MAX; yoko++)
 		{
 			//最初は全て描画する
-			Ebi.IsDraw = TRUE;	//エサ類置換予定地
-			Pura.IsDraw = TRUE;
-			Ika.IsDraw = TRUE;
+			for (int i = 0; i < EBI_MAX; i++)
+			{
+				Ebi[i].IsDraw = TRUE;
+			}
+
+			for (int i = 0; i < PURA_MAX; i++)
+			{
+				Pura[i].IsDraw = TRUE;
+			}
+
+			for (int i = 0; i < IKA_MAX; i++)
+			{
+				Ika[i].IsDraw = TRUE;
+			}
 
 			////マグロの前すぎるモデルは描画しない
 			//if (MaguroToMapZ + 20 < tate)
@@ -565,9 +587,20 @@ VOID MY_PLAY_PROC(VOID)
 			//マグロの後ろのモデルは描画しない
 			if (MaguroToMapZ - 1 > tate)
 			{
-				Ebi.IsDraw = FALSE;
-				Pura.IsDraw = FALSE;
-				Ika.IsDraw = FALSE;
+				for (int i = 0; i < EBI_MAX; i++)
+				{
+					Ebi[i].IsDraw = FALSE;
+				}
+
+				for (int i = 0; i < PURA_MAX; i++)
+				{
+					Pura[i].IsDraw = FALSE;
+				}
+
+				for (int i = 0; i < IKA_MAX; i++)
+				{
+					Ika[i].IsDraw = FALSE;
+				}
 			}
 		}
 	}
@@ -587,6 +620,89 @@ VOID MY_PLAY_PROC(VOID)
 	MaguroToMapX = int(Maguro.pos.x / MAP_YOKO_SIZE);
 	MaguroToMapZ = int(Maguro.pos.z / MAP_TATE_SIZE);
 
+	//マグロの線分を計算(位置の微調整)
+	MaguroCollVecStart = VGet(Maguro.pos.x, Maguro.pos.y + 10.0f, Maguro.pos.z);
+
+	//この時点で、まだ動ける
+	Maguro.IsMove = TRUE;
+
+	//当たり判定の処理
+	MV1_COLL_RESULT_POLY_DIM Ebi_poly;	//衝突判断係？
+	MV1_COLL_RESULT_POLY_DIM Pura_poly;
+	MV1_COLL_RESULT_POLY_DIM Ika_poly;
+	for (int tate = 0; tate < MAP_TATE_MAX; tate++)
+	{
+		for (int yoko = 0; yoko < MAP_YOKO_MAX; yoko++)
+		{
+			//エビ
+			for (int i = 0; i < EBI_MAX; i++)
+			{
+				if (Ebi[i].IsDraw == TRUE)
+				{
+					Ebi_poly = MV1CollCheck_Capsule(Ebi[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
+
+					//少しでもカプセルに触れたら動けない
+					if (Ebi_poly.HitNum >= 1)
+					{
+						Maguro.IsMove = FALSE;	//動けない
+						break;
+					}
+
+				}
+			}
+			
+
+			//プランクトン
+			for (int i = 0; i < PURA_MAX; i++)
+			{
+				if (Pura[i].IsDraw == TRUE)
+				{
+					Pura_poly = MV1CollCheck_Capsule(Pura[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
+
+					//少しでもカプセルに触れたら動けない
+					if (Pura_poly.HitNum >= 1)
+					{
+						Maguro.IsMove = FALSE;	//動けない
+						break;
+					}
+
+				}
+			}
+			
+
+			//イカ
+			for (int i = 0; i < IKA_MAX; i++)
+			{
+				if (Ika[i].IsDraw == TRUE)
+				{
+					Ika_poly = MV1CollCheck_Capsule(Ika[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
+
+					//少しでもカプセルに触れたら動けない
+					if (Ika_poly.HitNum >= 1)
+					{
+						Maguro.IsMove = FALSE;	//動けない
+						break;
+					}
+
+				}
+			}
+			
+
+		}
+		if (Maguro.IsMove == FALSE) { break; }
+	}
+
+	if (Maguro.IsMove == FALSE)
+	{
+		Maguro_O2 -= 1.0;
+	}
+	else if (Maguro.IsMove == TRUE || Maguro_O2 <= 100.0)
+	{
+		Maguro_O2 += 1.0;
+	}
+
+	return;
+
 }
 
 //プレイ画面の描画
@@ -597,6 +713,38 @@ VOID MY_PLAY_DRAW(VOID)
 
 	SetLightDirection(VGet(-1.0f, -1.0f, 1.0f));		// 標準ライトの方向を設定する
 	MV1DrawModel(Maguro.handle);						//マグロを描画
+
+	//描画
+	SetLightDirection(VGet(0.0f, 0.0f, 0.0f));
+	for (int i = 0; i < PURA_MAX; i++)	//プランクトン
+	{
+		if (Pura[i].IsDraw == TRUE)
+		{
+			Pura[i].pos = VGet(GetRand(15000), 0, GetRand(15000));
+			MV1SetPosition(Pura[i].handle, Pura[i].pos);
+		}
+
+	}
+
+	for (int i = 0; i < EBI_MAX; i++)	//エビ
+	{
+		if (Ebi[i].IsDraw == TRUE)
+		{
+			Ebi[i].pos = VGet(GetRand(15000), 0, GetRand(15000));
+			MV1SetPosition(Ebi[i].handle, Ebi[i].pos);
+		}
+
+	}
+
+	for (int i = 0; i < IKA_MAX; i++)	//イカ
+	{
+		if (Ika[i].IsDraw == TRUE)
+		{
+			Ika[i].pos = VGet(GetRand(15000), 0, GetRand(15000));
+			MV1SetPosition(Ika[i].handle, Ika[i].pos);
+		}
+
+	}
 
 	//デバッグ用表示
 	if (DEBUG_MODE == TRUE)
@@ -609,20 +757,20 @@ VOID MY_PLAY_DRAW(VOID)
 		//int Bunkatsu = 8;
 		//DrawCapsule3D(MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius, Bunkatsu, GetColor(255, 255, 255), GetColor(255, 255, 255), FALSE);
 	
-		//デバッグ用の位置を設定
-		Ebi.pos = VGet(5000, 0, 7500);
-		MV1SetPosition(Ebi.handle, Ebi.pos);
+		////デバッグ用の位置を設定
+		//Ebi.pos = VGet(5000, 0, 7500);
+		//MV1SetPosition(Ebi.handle, Ebi.pos);
 
-		Pura.pos = VGet(-2500, 0, -500);
-		MV1SetPosition(Pura.handle, Pura.pos);
+		//Pura.pos = VGet(-2500, 0, -500);
+		//MV1SetPosition(Pura.handle, Pura.pos);
 
-		Ika.pos = VGet(1000, 0, 2500);
-		MV1SetPosition(Ika.handle, Ika.pos);
+		//Ika.pos = VGet(1000, 0, 2500);
+		//MV1SetPosition(Ika.handle, Ika.pos);
 
-		//デバッグ用モデルの描画
-		MV1DrawModel(Ebi.handle);
-		MV1DrawModel(Pura.handle);
-		MV1DrawModel(Ika.handle);
+		////デバッグ用モデルの描画
+		//MV1DrawModel(Ebi.handle);
+		//MV1DrawModel(Pura.handle);
+		//MV1DrawModel(Ika.handle);
 	
 	}
 
@@ -859,51 +1007,62 @@ BOOL MY_LOAD_MODEL(VOID)
 	}
 
 	//エビを読み込む
-	strcpyDx(Ebi.path, MODEL_EBI_PATH);		//パスのコピー
-	Ebi.handle = MV1LoadModel(Ebi.path);		//モデル読み込み
-	//読み込みエラー
-	if (Ebi.handle == -1)
+	for (int i = 0; i < EBI_MAX; i++)
 	{
-		MessageBox(
-			GetMainWindowHandle(),
-			Ebi.path,
-			ERR_LOAD_TITLE_MODEL,
-			MB_OK
-		);
+		strcpyDx(Ebi[i].path, MODEL_EBI_PATH);		//パスのコピー
+		Ebi[i].handle = MV1LoadModel(Ebi[i].path);		//モデル読み込み
+		//読み込みエラー
+		if (Ebi[i].handle == -1)
+		{
+			MessageBox(
+				GetMainWindowHandle(),
+				Ebi[i].path,
+				ERR_LOAD_TITLE_MODEL,
+				MB_OK
+			);
 
-		return FALSE;
+			return FALSE;
+		}
 	}
+	
 
 	//プランクトンを読み込む
-	strcpyDx(Pura.path, MODEL_PURA_PATH);		//パスのコピー
-	Pura.handle = MV1LoadModel(Pura.path);		//モデル読み込み
-	//読み込みエラー
-	if (Pura.handle == -1)
+	for (int i = 0; i < PURA_MAX; i++)
 	{
-		MessageBox(
-			GetMainWindowHandle(),
-			Pura.path,
-			ERR_LOAD_TITLE_MODEL,
-			MB_OK
-		);
+		strcpyDx(Pura[i].path, MODEL_PURA_PATH);		//パスのコピー
+		Pura[i].handle = MV1LoadModel(Pura[i].path);		//モデル読み込み
+		//読み込みエラー
+		if (Pura[i].handle == -1)
+		{
+			MessageBox(
+				GetMainWindowHandle(),
+				Pura[i].path,
+				ERR_LOAD_TITLE_MODEL,
+				MB_OK
+			);
 
-		return FALSE;
+			return FALSE;
+		}
 	}
+	
 
 	//イカを読み込む
-	strcpyDx(Ika.path, MODEL_IKA_PATH);		//パスのコピー
-	Ika.handle = MV1LoadModel(Ika.path);		//モデル読み込み
-	//読み込みエラー
-	if (Ika.handle == -1)
+	for (int i = 0; i < IKA_MAX; i++)
 	{
-		MessageBox(
-			GetMainWindowHandle(),
-			Ika.path,
-			ERR_LOAD_TITLE_MODEL,
-			MB_OK
-		);
+		strcpyDx(Ika[i].path, MODEL_IKA_PATH);		//パスのコピー
+		Ika[i].handle = MV1LoadModel(Ika[i].path);		//モデル読み込み
+		//読み込みエラー
+		if (Ika[i].handle == -1)
+		{
+			MessageBox(
+				GetMainWindowHandle(),
+				Ika[i].path,
+				ERR_LOAD_TITLE_MODEL,
+				MB_OK
+			);
 
-		return FALSE;
+			return FALSE;
+		}
 	}
 
 	return TRUE;
@@ -913,9 +1072,20 @@ BOOL MY_LOAD_MODEL(VOID)
 VOID MY_DELETE_MODEL(VOID)
 {
 	MV1DeleteModel(Maguro.handle);
-	MV1DeleteModel(Ebi.handle);
-	MV1DeleteModel(Pura.handle);
-	MV1DeleteModel(Ika.handle);
+	for (int i = 0; i < EBI_MAX; i++)
+	{
+		MV1DeleteModel(Ebi[i].handle);
+	}
+
+	for (int i = 0; i < PURA_MAX; i++)
+	{
+		MV1DeleteModel(Pura[i].handle);
+	}
+
+	for (int i = 0; i < IKA_MAX; i++)
+	{
+		MV1DeleteModel(Ika[i].handle);
+	}
 
 	return;
 }
