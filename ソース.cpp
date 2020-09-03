@@ -54,7 +54,7 @@
 
 //マグロ関係
 #define MAGURO_MOVE			10.0f	//スピード
-#define MAGURO_CAP_RADIUS	30.0f	//当たり判定のカプセルの半径
+//#define MAGURO_CAP_RADIUS	30.0f	//当たり判定のカプセルの半径
 
 //エサの数
 #define EBI_MAX		50
@@ -167,30 +167,39 @@ IMAGE ImagePlayBK;
 int MaguroToMapX;
 int MaguroToMapZ;
 
-//マグロの当たり判定(カプセル)
-VECTOR MaguroCollVecStart;						//カプセルの始点
-VECTOR MaguroCollVecEnd;						//カプセルの終点
-float MaguroCollRadius = MAGURO_CAP_RADIUS;		//カプセルの半径
-
 //マグロが動けたときの座標を記憶
 VECTOR MaguroMovePos;
 
 //マグロのパラメータ
 float Maguro_O2 = 100.0;	//酸素
 float Maguro_Hp = 1000.0;	//空腹度
+float Maguro_Size = 0.2;		//初期の大きさ
 
-//int MaguroScale = 0.05;				//最初のマグロの大きさ
-//
-//VECTOR ModelPos = { 0.0f,0.0f,0.0f };	//モデルの座標を管理
-//
-//VECTOR ModelScale = { 0.5f,0.5f,0.5f };//最初のマグロの大きさ
-//
+//エサの大きさ
+float Pura_Size = 0.1;
+float Ebi_Size = 0.5;
+float Ika_Size = 1.0;
+
+//マグロの当たり判定(カプセル)
+VECTOR MaguroCollVecStart;						//カプセルの始点
+VECTOR MaguroCollVecEnd;						//カプセルの終点
+
+float MaguroCapRadius = Maguro_Size * 5;		//判定の大きさ？
+float MaguroCollRadius = MaguroCapRadius;		//カプセルの半径
+
+VECTOR MaguroScale_INIT = { Maguro_Size,Maguro_Size,Maguro_Size };//最初のマグロの大きさ
+
+//エサのサイズ指定
+VECTOR PuraScale = { Pura_Size,Pura_Size,Pura_Size };	//プランクトン
+VECTOR EbiScale = { Ebi_Size,Ebi_Size,Ebi_Size };	//エビ
+VECTOR IkaScale = { Ika_Size,Ika_Size,Ika_Size };	//イカ
+
 //VECTOR AddScale_pla = { 1.05f,1.05f,1.05f };	//プランクトンを食べたときに加算
-//
+
 //VECTOR AddScale_ebi = { 1.1f,1.1f,1.1f };	//エビを食べたときに加算
-//
+
 //VECTOR AddScale_ika = { 1.3f,1.3f,1.3f };	//イカを食べたときに加算
-//
+
 //MV1_COLL_RESULT_POLY HitPoly;		//当たり判定？
 
 //########## プロトタイプ宣言 ##########
@@ -556,25 +565,34 @@ VOID MY_PLAY_PROC(VOID)
 	if (Maguro.pos.z>= 15000.0f) { Maguro.IsMove = FALSE; }
 
 	//描画の判断
-	for (int tate = 0; tate < MAP_TATE_MAX; tate++)
+	/*for (int tate = 0; tate < MAP_TATE_MAX; tate++)
 	{
 		for (int yoko = 0; yoko < MAP_YOKO_MAX; yoko++)
-		{
-			//最初は全て描画する
-			for (int i = 0; i < EBI_MAX; i++)
-			{
-				Ebi[i].IsDraw = TRUE;
-			}
+		{*/
+			////最初は全て描画する
+			//for (int i = 0; i < EBI_MAX; i++)
+			//{
+			//	MV1SetScale(Ebi[i].handle, EbiScale);
+			//	Ebi[i].pos = VGet(GetRand(15000), 0, GetRand(15000));
+			//	MV1SetPosition(Ebi[i].handle, Ebi[i].pos);
+			//	Ebi[i].IsDraw = TRUE;
+			//}
 
-			for (int i = 0; i < PURA_MAX; i++)
-			{
-				Pura[i].IsDraw = TRUE;
-			}
+			//for (int i = 0; i < PURA_MAX; i++)
+			//{
+			//	MV1SetScale(Pura[i].handle, PuraScale);
+			//	Pura[i].pos = VGet(GetRand(15000), 0, GetRand(15000));
+			//	MV1SetPosition(Pura[i].handle, Pura[i].pos);
+			//	Pura[i].IsDraw = TRUE;
+			//}
 
-			for (int i = 0; i < IKA_MAX; i++)
-			{
-				Ika[i].IsDraw = TRUE;
-			}
+			//for (int i = 0; i < IKA_MAX; i++)
+			//{
+			//	MV1SetScale(Ika[i].handle, IkaScale);
+			//	Ika[i].pos = VGet(GetRand(15000), 0, GetRand(15000));
+			//	MV1SetPosition(Ika[i].handle, Ika[i].pos);
+			//	Ika[i].IsDraw = TRUE;
+			//}
 
 			////マグロの前すぎるモデルは描画しない
 			//if (MaguroToMapZ + 20 < tate)
@@ -585,7 +603,7 @@ VOID MY_PLAY_PROC(VOID)
 			//}
 
 			//マグロの後ろのモデルは描画しない
-			if (MaguroToMapZ - 1 > tate)
+			/*if (MaguroToMapZ - 1 > tate)
 			{
 				for (int i = 0; i < EBI_MAX; i++)
 				{
@@ -601,9 +619,9 @@ VOID MY_PLAY_PROC(VOID)
 				{
 					Ika[i].IsDraw = FALSE;
 				}
-			}
-		}
-	}
+			}*/
+		/*}
+	}*/
 
 	//ひとまずはスペースキーでエンド画面へ
 	if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
@@ -630,67 +648,60 @@ VOID MY_PLAY_PROC(VOID)
 	MV1_COLL_RESULT_POLY_DIM Ebi_poly;	//衝突判断係？
 	MV1_COLL_RESULT_POLY_DIM Pura_poly;
 	MV1_COLL_RESULT_POLY_DIM Ika_poly;
-	for (int tate = 0; tate < MAP_TATE_MAX; tate++)
+
+	//エビ
+	for (int i = 0; i < EBI_MAX; i++)
 	{
-		for (int yoko = 0; yoko < MAP_YOKO_MAX; yoko++)
+		if (Ebi[i].IsDraw == TRUE)
 		{
-			//エビ
-			for (int i = 0; i < EBI_MAX; i++)
+			Ebi_poly = MV1CollCheck_Capsule(Ebi[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
+
+			//少しでもカプセルに触れたら動けない
+			if (Ebi_poly.HitNum >= 1)
 			{
-				if (Ebi[i].IsDraw == TRUE)
-				{
-					Ebi_poly = MV1CollCheck_Capsule(Ebi[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
-
-					//少しでもカプセルに触れたら動けない
-					if (Ebi_poly.HitNum >= 1)
-					{
-						Maguro.IsMove = FALSE;	//動けない
-						break;
-					}
-
-				}
+				Maguro.IsMove = FALSE;	//動けない
+				break;
 			}
-			
-
-			//プランクトン
-			for (int i = 0; i < PURA_MAX; i++)
-			{
-				if (Pura[i].IsDraw == TRUE)
-				{
-					Pura_poly = MV1CollCheck_Capsule(Pura[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
-
-					//少しでもカプセルに触れたら動けない
-					if (Pura_poly.HitNum >= 1)
-					{
-						Maguro.IsMove = FALSE;	//動けない
-						break;
-					}
-
-				}
-			}
-			
-
-			//イカ
-			for (int i = 0; i < IKA_MAX; i++)
-			{
-				if (Ika[i].IsDraw == TRUE)
-				{
-					Ika_poly = MV1CollCheck_Capsule(Ika[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
-
-					//少しでもカプセルに触れたら動けない
-					if (Ika_poly.HitNum >= 1)
-					{
-						Maguro.IsMove = FALSE;	//動けない
-						break;
-					}
-
-				}
-			}
-			
 
 		}
-		if (Maguro.IsMove == FALSE) { break; }
 	}
+			
+
+	//プランクトン
+	for (int i = 0; i < PURA_MAX; i++)
+	{
+		if (Pura[i].IsDraw == TRUE)
+		{
+			Pura_poly = MV1CollCheck_Capsule(Pura[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
+
+			//少しでもカプセルに触れたら動けない
+			if (Pura_poly.HitNum >= 1)
+			{
+				Maguro.IsMove = FALSE;	//動けない
+				break;
+			}
+
+		}
+	}
+			
+
+	//イカ
+	for (int i = 0; i < IKA_MAX; i++)
+	{
+		if (Ika[i].IsDraw == TRUE)
+		{
+			Ika_poly = MV1CollCheck_Capsule(Ika[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
+
+			//少しでもカプセルに触れたら動けない
+			if (Ika_poly.HitNum >= 1)
+			{
+				Maguro.IsMove = FALSE;	//動けない
+				break;
+			}
+
+		}
+	}
+	//if (Maguro.IsMove == FALSE) { break; }
 
 	if (Maguro.IsMove == FALSE)
 	{
@@ -720,8 +731,7 @@ VOID MY_PLAY_DRAW(VOID)
 	{
 		if (Pura[i].IsDraw == TRUE)
 		{
-			Pura[i].pos = VGet(GetRand(15000), 0, GetRand(15000));
-			MV1SetPosition(Pura[i].handle, Pura[i].pos);
+			MV1DrawModel(Pura[i].handle);
 		}
 
 	}
@@ -730,8 +740,7 @@ VOID MY_PLAY_DRAW(VOID)
 	{
 		if (Ebi[i].IsDraw == TRUE)
 		{
-			Ebi[i].pos = VGet(GetRand(15000), 0, GetRand(15000));
-			MV1SetPosition(Ebi[i].handle, Ebi[i].pos);
+			MV1DrawModel(Ebi[i].handle);
 		}
 
 	}
@@ -740,8 +749,7 @@ VOID MY_PLAY_DRAW(VOID)
 	{
 		if (Ika[i].IsDraw == TRUE)
 		{
-			Ika[i].pos = VGet(GetRand(15000), 0, GetRand(15000));
-			MV1SetPosition(Ika[i].handle, Ika[i].pos);
+			MV1DrawModel(Ika[i].handle);
 		}
 
 	}
@@ -894,6 +902,32 @@ VOID MY_END_DRAW(VOID)
 //ゲーム初期化画面
 BOOL MY_GAME_INIT(VOID)
 {
+	MV1SetScale(Maguro.handle, MaguroScale_INIT);
+
+	//最初は全て描画する
+	for (int i = 0; i < EBI_MAX; i++)
+	{
+		MV1SetScale(Ebi[i].handle, EbiScale);
+		Ebi[i].pos = VGet(GetRand(15000), 0, GetRand(15000));
+		MV1SetPosition(Ebi[i].handle, Ebi[i].pos);
+		Ebi[i].IsDraw = TRUE;
+	}
+
+	for (int i = 0; i < PURA_MAX; i++)
+	{
+		MV1SetScale(Pura[i].handle, PuraScale);
+		Pura[i].pos = VGet(GetRand(15000), 0, GetRand(15000));
+		MV1SetPosition(Pura[i].handle, Pura[i].pos);
+		Pura[i].IsDraw = TRUE;
+	}
+
+	for (int i = 0; i < IKA_MAX; i++)
+	{
+		MV1SetScale(Ika[i].handle, IkaScale);
+		Ika[i].pos = VGet(GetRand(15000), 0, GetRand(15000));
+		MV1SetPosition(Ika[i].handle, Ika[i].pos);
+		Ika[i].IsDraw = TRUE;
+	}
 
 	return TRUE;
 }
