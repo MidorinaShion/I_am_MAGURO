@@ -173,12 +173,12 @@ VECTOR MaguroMovePos;
 //マグロのパラメータ
 float Maguro_O2 = 100.0;	//酸素
 float Maguro_Hp = 1000.0;	//空腹度
-float Maguro_Size = 0.2;		//初期の大きさ
+float Maguro_Size = 0.3;		//初期の大きさ
 
 //エサの大きさ
-float Pura_Size = 0.1;
-float Ebi_Size = 0.5;
-float Ika_Size = 1.0;
+float Pura_Size = 0.2;
+float Ebi_Size = 0.8;
+float Ika_Size = 1.5;
 
 //マグロの当たり判定(カプセル)
 VECTOR MaguroCollVecStart;						//カプセルの始点
@@ -187,7 +187,7 @@ VECTOR MaguroCollVecEnd;						//カプセルの終点
 float MaguroCapRadius = Maguro_Size * 5;		//判定の大きさ？
 float MaguroCollRadius = MaguroCapRadius;		//カプセルの半径
 
-VECTOR MaguroScale_INIT = { Maguro_Size,Maguro_Size,Maguro_Size };//最初のマグロの大きさ
+VECTOR MaguroScale = { Maguro_Size,Maguro_Size,Maguro_Size };//最初のマグロの大きさ
 
 //エサのサイズ指定
 VECTOR PuraScale = { Pura_Size,Pura_Size,Pura_Size };	//プランクトン
@@ -619,8 +619,8 @@ VOID MY_PLAY_PROC(VOID)
 				{
 					Ika[i].IsDraw = FALSE;
 				}
-			}*/
-		/*}
+			}
+		}
 	}*/
 
 	//ひとまずはスペースキーでエンド画面へ
@@ -657,7 +657,7 @@ VOID MY_PLAY_PROC(VOID)
 			Ebi_poly = MV1CollCheck_Capsule(Ebi[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
 
 			//少しでもカプセルに触れたら動けない
-			if (Ebi_poly.HitNum >= 1)
+			if (Ebi_poly.HitNum >= 1 && Maguro_Size < Ebi_Size)
 			{
 				Maguro.IsMove = FALSE;	//動けない
 				break;
@@ -675,7 +675,7 @@ VOID MY_PLAY_PROC(VOID)
 			Pura_poly = MV1CollCheck_Capsule(Pura[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
 
 			//少しでもカプセルに触れたら動けない
-			if (Pura_poly.HitNum >= 1)
+			if (Pura_poly.HitNum >= 1 && Maguro_Size < Pura_Size)
 			{
 				Maguro.IsMove = FALSE;	//動けない
 				break;
@@ -693,7 +693,7 @@ VOID MY_PLAY_PROC(VOID)
 			Ika_poly = MV1CollCheck_Capsule(Ika[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
 
 			//少しでもカプセルに触れたら動けない
-			if (Ika_poly.HitNum >= 1)
+			if (Ika_poly.HitNum >= 1 && Maguro_Size < Ika_Size)
 			{
 				Maguro.IsMove = FALSE;	//動けない
 				break;
@@ -902,7 +902,7 @@ VOID MY_END_DRAW(VOID)
 //ゲーム初期化画面
 BOOL MY_GAME_INIT(VOID)
 {
-	MV1SetScale(Maguro.handle, MaguroScale_INIT);
+	MV1SetScale(Maguro.handle, MaguroScale);
 
 	//最初は全て描画する
 	for (int i = 0; i < EBI_MAX; i++)
