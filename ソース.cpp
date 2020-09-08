@@ -559,9 +559,9 @@ VOID MY_PLAY(VOID)
 VOID MY_PLAY_PROC(VOID)
 {
 	//マップの外にいたら動けない
-	if (Maguro.pos.x <= -15000.0f) { Maguro.IsMove = FALSE; }
+	if (Maguro.pos.x <= 0.0f) { Maguro.IsMove = FALSE; }
 	if (Maguro.pos.x >= 15000.0f) { Maguro.IsMove = FALSE; }
-	if (Maguro.pos.z <= -15000.0f) { Maguro.IsMove = FALSE; }
+	if (Maguro.pos.z <= 0.0f) { Maguro.IsMove = FALSE; }
 	if (Maguro.pos.z>= 15000.0f) { Maguro.IsMove = FALSE; }
 
 	//描画の判断
@@ -635,8 +635,10 @@ VOID MY_PLAY_PROC(VOID)
 	MY_PROC_MAGURO();
 
 	//マグロの位置をマップと対応付ける
-	MaguroToMapX = int(Maguro.pos.x / MAP_YOKO_SIZE);
-	MaguroToMapZ = int(Maguro.pos.z / MAP_TATE_SIZE);
+	/*MaguroToMapX = int(Maguro.pos.x / MAP_YOKO_SIZE);
+	MaguroToMapZ = int(Maguro.pos.z / MAP_TATE_SIZE);*/
+	/*MaguroToMapX = Maguro.pos.x;
+	MaguroToMapZ = Maguro.pos.z;*/
 
 	//マグロの線分を計算(位置の微調整)
 	MaguroCollVecStart = VGet(Maguro.pos.x, Maguro.pos.y + 10.0f, Maguro.pos.z);
@@ -654,6 +656,11 @@ VOID MY_PLAY_PROC(VOID)
 	{
 		if (Ebi[i].IsDraw == TRUE)
 		{
+			if (Maguro.pos.z > Ebi->pos.z)
+			{
+				Ebi[i].IsDraw = FALSE;
+			}
+
 			Ebi_poly = MV1CollCheck_Capsule(Ebi[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
 
 			//少しでもカプセルに触れたら動けない
@@ -672,6 +679,11 @@ VOID MY_PLAY_PROC(VOID)
 	{
 		if (Pura[i].IsDraw == TRUE)
 		{
+			if (Maguro.pos.z > Pura->pos.z)
+			{
+				Pura[i].IsDraw = FALSE;
+			}
+
 			Pura_poly = MV1CollCheck_Capsule(Pura[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
 
 			//少しでもカプセルに触れたら動けない
@@ -690,6 +702,11 @@ VOID MY_PLAY_PROC(VOID)
 	{
 		if (Ika[i].IsDraw == TRUE)
 		{
+			if (Maguro.pos.z > Ika->pos.z)
+			{
+				Ika[i].IsDraw = FALSE;
+			}
+
 			Ika_poly = MV1CollCheck_Capsule(Ika[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
 
 			//少しでもカプセルに触れたら動けない
@@ -903,6 +920,7 @@ VOID MY_END_DRAW(VOID)
 BOOL MY_GAME_INIT(VOID)
 {
 	MV1SetScale(Maguro.handle, MaguroScale);
+	Maguro.pos = VGet(GetRand(1000), 0, GetRand(1000));
 
 	//最初は全て描画する
 	for (int i = 0; i < EBI_MAX; i++)
