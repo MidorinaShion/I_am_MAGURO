@@ -558,6 +558,9 @@ VOID MY_PLAY(VOID)
 //プレイ画面の処理
 VOID MY_PLAY_PROC(VOID)
 {
+	//サイズの更新
+	MV1SetScale(Maguro.handle, MaguroScale);
+
 	//マップの外にいたら動けない
 	if (Maguro.pos.x <= 0.0f) { Maguro.IsMove = FALSE; }
 	if (Maguro.pos.x >= 15000.0f) { Maguro.IsMove = FALSE; }
@@ -656,10 +659,10 @@ VOID MY_PLAY_PROC(VOID)
 	{
 		if (Ebi[i].IsDraw == TRUE)
 		{
-			if (Maguro.pos.z > Ebi->pos.z)
+			/*if (Maguro.pos.z > Ebi[i].pos.z)
 			{
 				Ebi[i].IsDraw = FALSE;
-			}
+			}*/
 
 			Ebi_poly = MV1CollCheck_Capsule(Ebi[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
 
@@ -667,7 +670,12 @@ VOID MY_PLAY_PROC(VOID)
 			if (Ebi_poly.HitNum >= 1 && Maguro_Size < Ebi_Size)
 			{
 				Maguro.IsMove = FALSE;	//動けない
-				break;
+				//break;
+			}
+			else if (Ebi_poly.HitNum >= 1 && Maguro_Size > Ebi_Size)
+			{
+				Ebi[i].IsDraw = FALSE;
+				Maguro_Size += 0.075;
 			}
 
 		}
@@ -679,10 +687,10 @@ VOID MY_PLAY_PROC(VOID)
 	{
 		if (Pura[i].IsDraw == TRUE)
 		{
-			if (Maguro.pos.z > Pura->pos.z)
+			/*if (Maguro.pos.z > Pura[i].pos.z)
 			{
 				Pura[i].IsDraw = FALSE;
-			}
+			}*/
 
 			Pura_poly = MV1CollCheck_Capsule(Pura[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
 
@@ -690,7 +698,12 @@ VOID MY_PLAY_PROC(VOID)
 			if (Pura_poly.HitNum >= 1 && Maguro_Size < Pura_Size)
 			{
 				Maguro.IsMove = FALSE;	//動けない
-				break;
+				//break;
+			}
+			else if (Pura_poly.HitNum >= 1 && Maguro_Size > Pura_Size)
+			{
+				Pura[i].IsDraw = FALSE;
+				Maguro_Size += 0.1;
 			}
 
 		}
@@ -702,10 +715,10 @@ VOID MY_PLAY_PROC(VOID)
 	{
 		if (Ika[i].IsDraw == TRUE)
 		{
-			if (Maguro.pos.z > Ika->pos.z)
+			/*if (Maguro.pos.z > Ika[i].pos.z)
 			{
 				Ika[i].IsDraw = FALSE;
-			}
+			}*/
 
 			Ika_poly = MV1CollCheck_Capsule(Ika[i].handle, -1, MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius);
 
@@ -713,7 +726,12 @@ VOID MY_PLAY_PROC(VOID)
 			if (Ika_poly.HitNum >= 1 && Maguro_Size < Ika_Size)
 			{
 				Maguro.IsMove = FALSE;	//動けない
-				break;
+				//break;
+			}
+			else if (Ika_poly.HitNum >= 1 && Maguro_Size > Ika_Size)
+			{
+				Ika[i].IsDraw = FALSE;
+				Maguro_Size += 0.1;
 			}
 
 		}
@@ -722,12 +740,16 @@ VOID MY_PLAY_PROC(VOID)
 
 	if (Maguro.IsMove == FALSE)
 	{
-		Maguro_O2 -= 1.0;
+		//エンドシーンへ移動する
+		GameScene = GAME_SCENE_END;
+
+		//Maguro_O2 -= 1.0;
+
 	}
-	else if (Maguro.IsMove == TRUE || Maguro_O2 <= 100.0)
+	/*else if (Maguro.IsMove == TRUE || Maguro_O2 <= 100.0)
 	{
 		Maguro_O2 += 1.0;
-	}
+	}*/
 
 	return;
 
@@ -920,7 +942,7 @@ VOID MY_END_DRAW(VOID)
 BOOL MY_GAME_INIT(VOID)
 {
 	MV1SetScale(Maguro.handle, MaguroScale);
-	Maguro.pos = VGet(GetRand(1000), 0, GetRand(1000));
+	Maguro.pos = VGet(GetRand((1000) + 1), 0, GetRand((1000) + 1));
 
 	//最初は全て描画する
 	for (int i = 0; i < EBI_MAX; i++)
