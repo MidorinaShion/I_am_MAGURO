@@ -562,10 +562,10 @@ VOID MY_PLAY_PROC(VOID)
 	MV1SetScale(Maguro.handle, MaguroScale);
 
 	//マップの外にいたら動けない
-	if (Maguro.pos.x <= 0.0f) { Maguro.IsMove = FALSE; }
+	/*if (Maguro.pos.x <= 0.0f) { Maguro.IsMove = FALSE; }
 	if (Maguro.pos.x >= 15000.0f) { Maguro.IsMove = FALSE; }
 	if (Maguro.pos.z <= 0.0f) { Maguro.IsMove = FALSE; }
-	if (Maguro.pos.z>= 15000.0f) { Maguro.IsMove = FALSE; }
+	if (Maguro.pos.z>= 15000.0f) { Maguro.IsMove = FALSE; }*/
 
 	//描画の判断
 	/*for (int tate = 0; tate < MAP_TATE_MAX; tate++)
@@ -675,7 +675,7 @@ VOID MY_PLAY_PROC(VOID)
 			else if (Ebi_poly.HitNum >= 1 && Maguro_Size > Ebi_Size)
 			{
 				Ebi[i].IsDraw = FALSE;
-				Maguro_Size += 0.075;
+				Maguro_Size += 0.3;
 			}
 
 		}
@@ -703,7 +703,7 @@ VOID MY_PLAY_PROC(VOID)
 			else if (Pura_poly.HitNum >= 1 && Maguro_Size > Pura_Size)
 			{
 				Pura[i].IsDraw = FALSE;
-				Maguro_Size += 0.1;
+				Maguro_Size += 0.5;
 			}
 
 		}
@@ -941,6 +941,7 @@ VOID MY_END_DRAW(VOID)
 //ゲーム初期化画面
 BOOL MY_GAME_INIT(VOID)
 {
+	Maguro_Size = 0.3;
 	MV1SetScale(Maguro.handle, MaguroScale);
 	Maguro.pos = VGet(GetRand((1000) + 1), 0, GetRand((1000) + 1));
 
