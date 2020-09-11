@@ -171,21 +171,20 @@ int MaguroToMapZ;
 VECTOR MaguroMovePos;
 
 //マグロのパラメータ
-float Maguro_O2 = 100.0;	//酸素
-float Maguro_Hp = 1000.0;	//空腹度
-float Maguro_Size = 0.3;		//初期の大きさ
+//float Maguro_O2 = 100.0;	//酸素
+//float Maguro_Hp = 1000.0;	//空腹度
+float Maguro_Size = 0.5f;		//初期の大きさ
 
 //エサの大きさ
-float Pura_Size = 0.2;
-float Ebi_Size = 0.8;
-float Ika_Size = 1.5;
+float Pura_Size = 0.2f;
+float Ebi_Size = 0.8f;
+float Ika_Size = 2.0f;
 
 //マグロの当たり判定(カプセル)
 VECTOR MaguroCollVecStart;						//カプセルの始点
 VECTOR MaguroCollVecEnd;						//カプセルの終点
 
-float MaguroCapRadius = Maguro_Size * 5;		//判定の大きさ？
-float MaguroCollRadius = MaguroCapRadius;		//カプセルの半径
+float MaguroCollRadius = Maguro_Size * 3;		//カプセルの半径
 
 VECTOR MaguroScale = { Maguro_Size,Maguro_Size,Maguro_Size };//最初のマグロの大きさ
 
@@ -263,7 +262,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (MY_GAME_INIT() == FALSE) { return -1; }
 
 	//標準ライトの方向を設定する
-	SetLightDirection(VGet(0.0f, 1.0f, 0.0f));
+	//SetLightDirection(VGet(0.0f, 1.0f, 0.0f));
 
 	//無限ループ
 	while (TRUE)
@@ -559,6 +558,7 @@ VOID MY_PLAY(VOID)
 VOID MY_PLAY_PROC(VOID)
 {
 	//サイズの更新
+	MaguroScale = VGet(Maguro_Size, Maguro_Size, Maguro_Size);
 	MV1SetScale(Maguro.handle, MaguroScale);
 
 	//マップの外にいたら動けない
@@ -646,6 +646,9 @@ VOID MY_PLAY_PROC(VOID)
 	//マグロの線分を計算(位置の微調整)
 	MaguroCollVecStart = VGet(Maguro.pos.x, Maguro.pos.y + 10.0f, Maguro.pos.z);
 
+	//マグロの線分を計算(位置の微調整)
+	MaguroCollVecEnd = VGet(Maguro.pos.x, Maguro.pos.y - 10.0f, Maguro.pos.z);
+
 	//この時点で、まだ動ける
 	Maguro.IsMove = TRUE;
 
@@ -675,7 +678,7 @@ VOID MY_PLAY_PROC(VOID)
 			else if (Ebi_poly.HitNum >= 1 && Maguro_Size > Ebi_Size)
 			{
 				Ebi[i].IsDraw = FALSE;
-				Maguro_Size += 0.3;
+				Maguro_Size += 0.075f;
 			}
 
 		}
@@ -703,7 +706,7 @@ VOID MY_PLAY_PROC(VOID)
 			else if (Pura_poly.HitNum >= 1 && Maguro_Size > Pura_Size)
 			{
 				Pura[i].IsDraw = FALSE;
-				Maguro_Size += 0.5;
+				Maguro_Size += 0.05f;
 			}
 
 		}
@@ -731,7 +734,7 @@ VOID MY_PLAY_PROC(VOID)
 			else if (Ika_poly.HitNum >= 1 && Maguro_Size > Ika_Size)
 			{
 				Ika[i].IsDraw = FALSE;
-				Maguro_Size += 0.1;
+				Maguro_Size += 0.1f;
 			}
 
 		}
@@ -761,11 +764,10 @@ VOID MY_PLAY_DRAW(VOID)
 	// カメラのクリッピング距離を設定
 	SetCameraNearFar(CAMERA_NEAR, CAMERA_FAR);
 
-	SetLightDirection(VGet(-1.0f, -1.0f, 1.0f));		// 標準ライトの方向を設定する
+	SetLightDirection(VGet(0.0f, -1.0f, 1.0f));		// 標準ライトの方向を設定する
 	MV1DrawModel(Maguro.handle);						//マグロを描画
 
 	//描画
-	SetLightDirection(VGet(0.0f, 0.0f, 0.0f));
 	for (int i = 0; i < PURA_MAX; i++)	//プランクトン
 	{
 		if (Pura[i].IsDraw == TRUE)
@@ -799,10 +801,11 @@ VOID MY_PLAY_DRAW(VOID)
 		DrawFormatString(0, 20, GetColor(255, 255, 255), "HAngle:%.2lf / VAngle:%.2lf", camera.HAngle, camera.VAngle);
 		DrawFormatString(0, 40, GetColor(255, 255, 255), "MaguroToMapX:%2d / MaguroToMapZ:%2d", MaguroToMapX, MaguroToMapZ);
 		DrawFormatString(0, 60, GetColor(255, 255, 255), "MaguroX:%.2lf / MaguroZ:%.2lf", Maguro.pos.x, Maguro.pos.z);
+		DrawFormatString(0, 80, GetColor(255, 255, 255), "Maguro_Size:%.2lf", Maguro_Size);
 
 		//デバッグ用のカプセルの表示
-		//int Bunkatsu = 8;
-		//DrawCapsule3D(MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius, Bunkatsu, GetColor(255, 255, 255), GetColor(255, 255, 255), FALSE);
+		int Bunkatsu = 8;
+		DrawCapsule3D(MaguroCollVecStart, MaguroCollVecEnd, MaguroCollRadius, Bunkatsu, GetColor(255, 255, 255), GetColor(255, 255, 255), TRUE);
 	
 		////デバッグ用の位置を設定
 		//Ebi.pos = VGet(5000, 0, 7500);
@@ -941,7 +944,7 @@ VOID MY_END_DRAW(VOID)
 //ゲーム初期化画面
 BOOL MY_GAME_INIT(VOID)
 {
-	Maguro_Size = 0.3;
+	Maguro_Size = 0.5;
 	MV1SetScale(Maguro.handle, MaguroScale);
 	Maguro.pos = VGet(GetRand((1000) + 1), 0, GetRand((1000) + 1));
 
