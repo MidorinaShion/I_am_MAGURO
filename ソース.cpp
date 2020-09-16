@@ -3,7 +3,7 @@
 
 //########## ƒ}ƒNƒ’è‹` ##########
 
-#define DEBUG_MODE			TRUE	//ƒfƒoƒbƒOƒ‚[ƒh
+#define DEBUG_MODE			FALSE	//ƒfƒoƒbƒOƒ‚[ƒh
 
 #define GAME_WIDTH			1000	//‰æ–Ê‚Ì‰¡‚Ì‘å‚«‚³
 #define GAME_HEIGHT			600	//‰æ–Ê‚Ìc‚Ì‘å‚«‚³
@@ -40,10 +40,10 @@
 #define IMAGE_PLAY_BK_PATH	TEXT(".\\‰æ‘œ\\ƒvƒŒƒC”wŒi.png")
 
 //ƒJƒƒ‰‚Ìİ’è
-#define CAMERA_NEAR			500.0f		//‚Ç‚±‚Ü‚Å‹ß‚­‚ğÊ‚·‚©
+#define CAMERA_NEAR			50.0f		//‚Ç‚±‚Ü‚Å‹ß‚­‚ğÊ‚·‚©
 #define CAMERA_FAR			60000.0f	//‚Ç‚±‚Ü‚Å‰“‚­‚ğÊ‚·‚©
 #define CAMERA_HEIGHT		0.0f		//ƒJƒƒ‰‚Ì’‹“_‚Ì‚‚³
-#define CAMERA_DISTANCE		1000.0f		//ƒJƒƒ‰‚Æ’‹“_‚Ì‹——£
+#define CAMERA_DISTANCE		700.0f		//ƒJƒƒ‰‚Æ’‹“_‚Ì‹——£
 #define CAMERA_INIT_V_ANGLE	0.0f		//ƒJƒƒ‰‚ÌŒü‚«ƒfƒtƒHƒ‹ƒg(‚’¼) / -90‚ªã 90‚ª‰º
 #define CAMERA_INIT_H_ANGLE	180.0f		//ƒJƒƒ‰‚ÌŒü‚«ƒfƒtƒHƒ‹ƒg(…•½) / -90‚ª¶ 90‚ª‰E
 #define CAMERA_ANGLE_X_PLUS	1.0f		//ƒJƒƒ‰‚ÌŠp“x(X)‚Ì‰ÁZ’l
@@ -197,6 +197,9 @@ VECTOR MaguroScale = { Maguro_Size,Maguro_Size,Maguro_Size };//Å‰‚Ìƒ}ƒOƒ‚Ì‘å‚
 VECTOR PuraScale = { Pura_Size,Pura_Size,Pura_Size };	//ƒvƒ‰ƒ“ƒNƒgƒ“
 VECTOR EbiScale = { Ebi_Size,Ebi_Size,Ebi_Size };	//ƒGƒr
 VECTOR IkaScale = { Ika_Size,Ika_Size,Ika_Size };	//ƒCƒJ
+
+//ƒJƒƒ‰‚Ì‹——£
+float Cam_Dist = CAMERA_DISTANCE;
 
 //VECTOR AddScale_pla = { 1.05f,1.05f,1.05f };	//ƒvƒ‰ƒ“ƒNƒgƒ“‚ğH‚×‚½‚Æ‚«‚É‰ÁZ
 
@@ -649,10 +652,10 @@ VOID MY_PLAY_PROC(VOID)
 	MaguroToMapZ = Maguro.pos.z;*/
 
 	//ƒ}ƒOƒ‚Ìü•ª‚ğŒvZ(ˆÊ’u‚Ì”÷’²®)
-	MaguroCollVecStart = VGet(Maguro.pos.x, Maguro.pos.y + 35.0f + (Maguro_Size * 5), Maguro.pos.z);
+	MaguroCollVecStart = VGet(Maguro.pos.x, Maguro.pos.y + 35.0f * (Maguro_Size + 1), Maguro.pos.z);
 
 	//ƒ}ƒOƒ‚Ìü•ª‚ğŒvZ(ˆÊ’u‚Ì”÷’²®)
-	MaguroCollVecEnd = VGet(Maguro.pos.x, Maguro.pos.y - 35.0f + (Maguro_Size * 5), Maguro.pos.z);
+	MaguroCollVecEnd = VGet(Maguro.pos.x, Maguro.pos.y - 35.0f * (Maguro_Size + 1), Maguro.pos.z);
 
 	//‚±‚Ì“_‚ÅA‚Ü‚¾“®‚¯‚é
 	Maguro.IsMove = TRUE;
@@ -684,7 +687,8 @@ VOID MY_PLAY_PROC(VOID)
 			{
 				Ebi[i].IsDraw = FALSE;
 				Maguro_Size += 0.075f;
-				MaguroCollRadius += 0.075f;
+				MaguroCollRadius *= 1.075f;
+				Cam_Dist *= 1.05f;
 			}
 
 		}
@@ -713,7 +717,8 @@ VOID MY_PLAY_PROC(VOID)
 			{
 				Pura[i].IsDraw = FALSE;
 				Maguro_Size += 0.05f;
-				MaguroCollRadius += 0.05f;
+				MaguroCollRadius *= 1.05f;
+				Cam_Dist *= 1.03f;
 			}
 
 		}
@@ -742,7 +747,8 @@ VOID MY_PLAY_PROC(VOID)
 			{
 				Ika[i].IsDraw = FALSE;
 				Maguro_Size += 0.1f;
-				MaguroCollRadius += 0.1f;
+				MaguroCollRadius *= 1.1f;
+				Cam_Dist *= 1.08f;
 			}
 
 		}
@@ -897,8 +903,8 @@ VOID MY_PROC_MAGURO(VOID)
 	Maguro.VecSin = sin(double(camera.VAngle / 150.0f) * DX_PI_F);
 	Maguro.VecCos = cos(double(camera.VAngle / 180.0f) * DX_PI_F);
 	TempPosCalc1.x = 0.0f;
-	TempPosCalc1.y = Maguro.VecSin * CAMERA_DISTANCE;
-	TempPosCalc1.z = -Maguro.VecCos * CAMERA_DISTANCE;
+	TempPosCalc1.y = Maguro.VecSin * Cam_Dist;
+	TempPosCalc1.z = -Maguro.VecCos * Cam_Dist;
 
 	// Ÿ‚É…•½Šp“x‚ğ”½‰f‚µ‚½ˆÊ’u‚ğZo
 	Maguro.VecSin = sin(double(camera.HAngle / 180.0f) * DX_PI_F);
