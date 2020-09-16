@@ -19,10 +19,15 @@
 #define NAME_MAX	255
 
 //3Dモデルのパス
-#define MODEL_MAGURO_PATH	TEXT(".\\mqoモデル\\マグロ\\マグロ.mqo")
-#define MODEL_EBI_PATH		TEXT(".\\mqoモデル\\エビ\\エビ.mqo")
-#define MODEL_IKA_PATH		TEXT(".\\mqoモデル\\イカ\\イカ.mqo")
-#define MODEL_PURA_PATH		TEXT(".\\mqoモデル\\プランクトン\\プランクトン.mqo")
+//#define MODEL_MAGURO_PATH	TEXT(".\\mqoモデル\\マグロ\\マグロ.mqo")
+//#define MODEL_EBI_PATH		TEXT(".\\mqoモデル\\エビ\\エビ.mqo")
+//#define MODEL_IKA_PATH		TEXT(".\\mqoモデル\\イカ\\イカ.mqo")
+//#define MODEL_PURA_PATH		TEXT(".\\mqoモデル\\プランクトン\\プランクトン.mqo")
+
+#define MODEL_MAGURO_PATH	TEXT(".\\models\\Maguro.mqo")
+#define MODEL_EBI_PATH		TEXT(".\\models\\Ebi.mqo")
+#define MODEL_IKA_PATH		TEXT(".\\models\\Ika.mqo")
+#define MODEL_PURA_PATH		TEXT(".\\models\\Pura.mqo")
 
 //画像のパス(仮置き)
 #define IMAGE_TITLE_BK_PATH		TEXT(".\\画像\\タイトル背景.png")
@@ -184,7 +189,7 @@ float Ika_Size = 2.0f;
 VECTOR MaguroCollVecStart;						//カプセルの始点
 VECTOR MaguroCollVecEnd;						//カプセルの終点
 
-float MaguroCollRadius = Maguro_Size * 3;		//カプセルの半径
+float MaguroCollRadius = Maguro_Size * 70;		//カプセルの半径
 
 VECTOR MaguroScale = { Maguro_Size,Maguro_Size,Maguro_Size };//最初のマグロの大きさ
 
@@ -644,10 +649,10 @@ VOID MY_PLAY_PROC(VOID)
 	MaguroToMapZ = Maguro.pos.z;*/
 
 	//マグロの線分を計算(位置の微調整)
-	MaguroCollVecStart = VGet(Maguro.pos.x, Maguro.pos.y + 10.0f, Maguro.pos.z);
+	MaguroCollVecStart = VGet(Maguro.pos.x, Maguro.pos.y + 35.0f + (Maguro_Size * 5), Maguro.pos.z);
 
 	//マグロの線分を計算(位置の微調整)
-	MaguroCollVecEnd = VGet(Maguro.pos.x, Maguro.pos.y - 10.0f, Maguro.pos.z);
+	MaguroCollVecEnd = VGet(Maguro.pos.x, Maguro.pos.y - 35.0f + (Maguro_Size * 5), Maguro.pos.z);
 
 	//この時点で、まだ動ける
 	Maguro.IsMove = TRUE;
@@ -679,6 +684,7 @@ VOID MY_PLAY_PROC(VOID)
 			{
 				Ebi[i].IsDraw = FALSE;
 				Maguro_Size += 0.075f;
+				MaguroCollRadius += 0.075f;
 			}
 
 		}
@@ -707,6 +713,7 @@ VOID MY_PLAY_PROC(VOID)
 			{
 				Pura[i].IsDraw = FALSE;
 				Maguro_Size += 0.05f;
+				MaguroCollRadius += 0.05f;
 			}
 
 		}
@@ -735,6 +742,7 @@ VOID MY_PLAY_PROC(VOID)
 			{
 				Ika[i].IsDraw = FALSE;
 				Maguro_Size += 0.1f;
+				MaguroCollRadius += 0.1f;
 			}
 
 		}
@@ -833,6 +841,8 @@ VOID MY_PROC_MAGURO(VOID)
 	//マグロの移動量を初期化
 	Maguro.move = VGet(0.0f, 0.0f, 0.0f);
 
+	camera.VAngle = 15;
+
 	if (Maguro.IsMove == TRUE)
 	{
 			//マグロを自動スクロール
@@ -884,7 +894,7 @@ VOID MY_PROC_MAGURO(VOID)
 	CameraLookAtPos.y += CAMERA_HEIGHT;
 
 	// 最初に垂直角度を反映した位置を算出
-	Maguro.VecSin = sin(double(camera.VAngle / 180.0f) * DX_PI_F);
+	Maguro.VecSin = sin(double(camera.VAngle / 150.0f) * DX_PI_F);
 	Maguro.VecCos = cos(double(camera.VAngle / 180.0f) * DX_PI_F);
 	TempPosCalc1.x = 0.0f;
 	TempPosCalc1.y = Maguro.VecSin * CAMERA_DISTANCE;
