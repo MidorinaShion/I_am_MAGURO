@@ -37,7 +37,11 @@
 #define IMAGE_TITLE_HOWTO_PATH	TEXT(".\\画像\\あそびかた.png")
 #define IMAGE_HOWTO_BK_PATH		TEXT(".\\画像\\あそびかた背景.png")
 
-#define IMAGE_PLAY_BK_PATH	TEXT(".\\画像\\プレイ背景.png")
+#define IMAGE_PLAY_BK_PATH		TEXT(".\\画像\\プレイ背景.png")
+
+#define IMAGE_END_LOGO_PATH		TEXT(".\\画像\\残念3.png")
+#define IMAGE_END_CONTENUE_PATH	TEXT(".\\画像\\つづける.png")
+#define IMAGE_END_END_PATH		TEXT(".\\画像\\おわる2.png")
 
 //カメラの設定
 #define CAMERA_NEAR			50.0f		//どこまで近くを写すか
@@ -167,6 +171,10 @@ IMAGE ImageTitleHowTo;
 IMAGE ImageHowToBK;
 
 IMAGE ImagePlayBK;
+
+IMAGE ImageEndLOGO;
+IMAGE ImageEndContenue;
+IMAGE ImageEndEnd;
 
 //マグロの位置をマップと対応付ける
 int MaguroToMapX;
@@ -951,7 +959,15 @@ VOID MY_END_PROC(VOID)
 //エンド画面の描画
 VOID MY_END_DRAW(VOID)
 {
+	//背景描画
+	DrawGraph(ImagePlayBK.x, ImagePlayBK.y, ImagePlayBK.handle, TRUE);
+
 	MY_PLAY_DRAW();	//プレイ画面の描画
+
+	DrawGraph(ImageEndLOGO.x, ImageEndLOGO.y, ImageEndLOGO.handle, TRUE);
+	DrawGraph(ImageEndContenue.x, ImageEndContenue.y, ImageEndContenue.handle, TRUE);
+	DrawGraph(ImageEndEnd.x, ImageEndEnd.y, ImageEndEnd.handle, TRUE);
+
 	DrawString(0, 0, "エンド画面(エンターキーを押してください)", GetColor(255, 255, 255));
 
 	return;
@@ -1065,6 +1081,36 @@ BOOL MY_LOAD_IMAGE(VOID)
 	ImagePlayBK.x = GAME_WIDTH / 2 - ImagePlayBK.width / 2;	//中央揃え
 	ImagePlayBK.y = GAME_HEIGHT / 2 - ImagePlayBK.height / 2;	//中央揃え
 
+	//残念
+	wsprintf(ImageEndLOGO.path, IMAGE_END_LOGO_PATH);	//ファイルパスをコピー
+	ImageEndLOGO.handle = LoadGraph(ImageEndLOGO.path);	//画像をメモリに読み込み、ハンドルを取得
+	if (ImageEndLOGO.handle == -1) { MessageBox(GetMainWindowHandle(), ImageEndLOGO.path, ERR_LOAD_TITLE_IMAGE, MB_OK); return FALSE; }
+
+	//画像サイズを取得
+	GetGraphSize(ImageEndLOGO.handle, &ImageEndLOGO.width, &ImageEndLOGO.height);
+	ImageEndLOGO.x = 110.0;	//X座標
+	ImageEndLOGO.y = 95.0;	//Y座標
+
+	//つづける
+	wsprintf(ImageEndContenue.path, IMAGE_END_CONTENUE_PATH);	//ファイルパスをコピー
+	ImageEndContenue.handle = LoadGraph(ImageEndContenue.path);	//画像をメモリに読み込み、ハンドルを取得
+	if (ImageEndContenue.handle == -1) { MessageBox(GetMainWindowHandle(), ImageEndContenue.path, ERR_LOAD_TITLE_IMAGE, MB_OK); return FALSE; }
+
+	//画像サイズを取得
+	GetGraphSize(ImageEndContenue.handle, &ImageEndContenue.width, &ImageEndContenue.height);
+	ImageEndContenue.x = 221.0;	//X座標
+	ImageEndContenue.y = 442.0;	//Y座標
+
+	//おわる
+	wsprintf(ImageEndEnd.path, IMAGE_END_END_PATH);	//ファイルパスをコピー
+	ImageEndEnd.handle = LoadGraph(ImageEndEnd.path);	//画像をメモリに読み込み、ハンドルを取得
+	if (ImageEndEnd.handle == -1) { MessageBox(GetMainWindowHandle(), ImageEndEnd.path, ERR_LOAD_TITLE_IMAGE, MB_OK); return FALSE; }
+
+	//画像サイズを取得
+	GetGraphSize(ImageEndEnd.handle, &ImageEndEnd.width, &ImageEndEnd.height);
+	ImageEndEnd.x = 601.0;	//X座標
+	ImageEndEnd.y = 442.0;	//Y座標
+
 	return TRUE;
 }
 
@@ -1077,6 +1123,9 @@ VOID MY_DELETE_IMAGE(VOID)
 	DeleteGraph(ImageTitleEnd.handle);
 	DeleteGraph(ImageTitleHowTo.handle);
 	DeleteGraph(ImagePlayBK.handle);
+	DeleteGraph(ImageEndLOGO.handle);
+	DeleteGraph(ImageEndContenue.handle);
+	DeleteGraph(ImageEndEnd.handle);
 
 	return;
 }
