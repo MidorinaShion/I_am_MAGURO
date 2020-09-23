@@ -518,7 +518,7 @@ VOID MY_START_DRAW(VOID)
 	DrawGraph(ImageTitleEnd.x, ImageTitleEnd.y, ImageTitleEnd.handle, TRUE);
 	DrawGraph(ImageTitleHowTo.x, ImageTitleHowTo.y, ImageTitleHowTo.handle, TRUE);
 
-	DrawString(0, 0, "スタート画面", GetColor(255, 255, 255));
+	//DrawString(0, 0, "スタート画面", GetColor(255, 255, 255));
 	return;
 }
 
@@ -553,7 +553,7 @@ VOID MY_HOWTO_DRAW(VOID)
 	//背景描画
 	DrawGraph(ImageHowToBK.x, ImageHowToBK.y, ImageHowToBK.handle, TRUE);
 
-	DrawString(0, 0, "あそびかた画面", GetColor(255, 255, 255));
+	//DrawString(0, 0, "あそびかた画面", GetColor(255, 255, 255));
 	return;
 }
 
@@ -565,7 +565,7 @@ VOID MY_PLAY(VOID)
 
 	MY_PLAY_PROC();	//プレイ画面の処理
 	MY_PLAY_DRAW();	//プレイ画面の描画
-	DrawString(0, 0, "プレイ画面", GetColor(255, 255, 255));
+	//DrawString(0, 0, "プレイ画面", GetColor(255, 255, 255));
 
 	return;
 }
@@ -968,7 +968,7 @@ VOID MY_END_DRAW(VOID)
 	DrawGraph(ImageEndContenue.x, ImageEndContenue.y, ImageEndContenue.handle, TRUE);
 	DrawGraph(ImageEndEnd.x, ImageEndEnd.y, ImageEndEnd.handle, TRUE);
 
-	DrawString(0, 0, "エンド画面(エンターキーを押してください)", GetColor(255, 255, 255));
+	//DrawString(0, 0, "エンド画面(エンターキーを押してください)", GetColor(255, 255, 255));
 
 	return;
 }
