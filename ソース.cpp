@@ -756,7 +756,7 @@ VOID MY_PLAY_PROC(VOID)
 				Ika[i].IsDraw = FALSE;
 				Maguro_Size += 0.1f;
 				MaguroCollRadius *= 1.1f;
-				Cam_Dist *= 1.08f;
+				Cam_Dist *= 1.05f;
 			}
 
 		}
@@ -979,6 +979,7 @@ BOOL MY_GAME_INIT(VOID)
 	Maguro_Size = 0.5;
 	MV1SetScale(Maguro.handle, MaguroScale);
 	Maguro.pos = VGet(GetRand((1000) + 1), 0, GetRand((1000) + 1));
+	Cam_Dist = CAMERA_DISTANCE;
 
 	//ç≈èâÇÕëSÇƒï`âÊÇ∑ÇÈ
 	for (int i = 0; i < EBI_MAX; i++)
